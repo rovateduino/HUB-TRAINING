@@ -1,17 +1,40 @@
 # HUB Training — Treinamento Manutenção Elétrica
 
-Aplicação web (**Node.js 18+ / Express 4 / SQLite / Firestore dual-write**) para treinamento interno de profissionais que executam manutenção preventiva elétrica em Hubs / Sites / Data Centers. Substituiu a versão anterior em Python/Flask.
+Aplicação web (**Node.js 20 / Express 4 / Firestore como fonte primária**) para treinamento interno de profissionais que executam manutenção preventiva elétrica em Hubs / Sites / Data Centers. Substituiu a versão anterior em Python/Flask.
 
 ## Recursos
-- Site didático responsivo com 17 módulos + fluxograma real.
+- Site didático responsivo com **33 módulos** + fluxograma real: 17 da trilha base, **7 do mini-curso NR-10** e **9 do curso de Ar-condicionado**.
+- "Acesso rápido aos módulos" lista **todos** os módulos (com busca); "Estudar Cartilha" tem o índice completo.
 - Fotos reais de infraestrutura elétrica (gerador, banco de baterias, data center).
-- Simulado com 30 questões; aprovação em **23/30 (76,7%)**.
+- Simulado com 30 questões; aprovação em **23/30 (76,7%)** — banco principal inalterado (novos cursos usam faixas próprias: NR-10 `order 101–130`, AC `order 201–230`).
 - Profissional (STUDENT) vê apenas **APROVADO / NÃO APROVADO**.
 - ADM vê pontuação, percentual, resposta dada, correta e erros, exporta CSV.
-- Histórico em SQLite WAL (`training.db`) com sync best-effort para Firestore.
+- Histórico em SQLite WAL (`training.db`) com Firestore como **fonte primária do runtime** (`hub-training-2200d`, região `southamerica-east1`).
 - Autenticação completa: JWT + bcrypt 10 rounds + rate limit + audit trail.
 - **Portaria controlada pelo ADM**: só se cadastra quem tem **token de convite** emitido pela área ADM.
 - Recuperação de senha via token exibido em tela (não depende de SMTP/e-mail transacional).
+- Menu público: **Início | Mini Cursos | ADM**.
+- Janela de manutenção da rotina preventiva: **01:00–05:00** (ticket + autorização do SMC).
+
+## Mini-cursos
+Seguem o mesmo padrão dos demais cursos (`training_modules → training_lessons → lesson_checkpoints/checkpoint_options` + banco `questions/question_options` com `explanation`):
+
+| Mini-curso | Módulos (`order`) | Categoria | Carga sugerida | Checkpoints (fixação) | Banco avaliação |
+|---|---|---|---|---|---|
+| NR-10 — Segurança em Instalações e Serviços em Eletricidade | 7 (18–24) | `NR-10` | ~2h | 11 (simulado 10Q, gabarito 1-B…10-B) | 30Q `order 101–130`, cat. `NR-10 -*` |
+| Ar-condicionado — Instalação e Manutenção | 9 (25–33) | `AC` | ~3h | 14 (simulado 10Q + 4 extras) | 30Q `order 201–230`, cat. `AC -*` |
+
+- Os mini-cursos **contam para a certificação** (totais dinâmicos: é preciso concluir todas as lições + checkpoints) e entram no **Conteúdo Programático** do certificado; preencha a carga horária por módulo em Área ADM → Configurações do Certificado.
+- Material educacional: **não** substitui o curso oficial NR-10 (40h), certificações (NR-35/NR-10), manuais de fabricantes nem prática supervisionada.
+
+### Seeds (idempotentes — só inserem o que não existe, nunca apagam)
+```sh
+npm run seed:nr10             # SQLite: 7 módulos + 7 lições + 11 checkpoints + 30 questões
+npm run seed:nr10:firestore   # Replica o NR-10 do SQLite → Firestore (219 docs) [--force] [--dry-run]
+npm run seed:ac               # SQLite: 9 módulos + 9 lições + 14 checkpoints + 30 questões
+npm run seed:ac:firestore     # Replica o AC do SQLite → Firestore (238 docs) [--force] [--dry-run]
+node scripts/fix_janela.cjs   # 1-shot: janela 21:00–06:45 → 01:00–05:00 (lição 10, qopt 268, cpopt 44) [--dry-run]
+```
 
 ## Como executar
 Requer **Node.js 18+** (20+ recomendado) e npm.
@@ -87,11 +110,12 @@ Ações registradas (dual-write, best-effort):
 `LOGIN`, `LOGOUT`, `USER_REGISTER`, `INVITE_TOKEN_CREATE`, `INVITE_TOKEN_REVOKE`, `PASSWORD_RESET_REQUEST`, `PASSWORD_RESET_CONFIRM`, `ADMIN_PASSWORD_RESET_REQUEST`, `QUIZ_SUBMIT`, `PROGRESS_UPDATE`, `RBAC_DENIED`, etc.
 
 ## Banco de dados
-- **SQLite WAL**: `training.db` (fonte da verdade).
+- **Firestore é a fonte primária do runtime** (SQLite removido do runtime; `training.db` segue como origem dos seeds locais).
 - Esquemas em `database/migrations/*.sql` + `*.cjs`.
 - Migrações: `node database/migrate.cjs` (idempotente).
+- Migração SQLite → Firestore: `node scripts/migrate_sqlite_to_firestore.cjs [--dry-run] [--force]`.
 - Reset total (apaga dados): delete `training.db` e rode migrate + seed.
-- Dual-write Firestore opcional via SDK Admin (`hub-training-2200d`, região `southamerica-east1`); requer `./firebase-service-account.json` ou variáveis `FIREBASE_*` no `.env`. Se ausente, loga aviso e continua operando apenas em SQLite.
+- Requer `./firebase-service-account.json` ou variáveis `FIREBASE_*` no `.env`. Se ausente, loga aviso.
 
 ## Testes
 ```sh
@@ -103,6 +127,9 @@ Resultados de referência (commit corrente):
 - `test:final`: **41/41 PASS (0 regressões)**
 
 ## Publicação real
+- Produção: `https://hub-training-eta.vercel.app/` (deploy automático via push na `main`).
+- Build de validação: `npm run build` (`build.js` confere entrypoint + estáticos).
+- **Assets `/static/*` são servidos pelo Express** (não há rota `/static` no `vercel.json`; ela causava 404 de CSS/JS em produção).
 - Use **HTTPS** (nginx / Cloudflare / Application Gateway com WAF).
 - Preencha `JWT_SECRET` (>= 64 bytes aleatórios).
 - Backup diário de `training.db` (WAL shm/wal junto).
