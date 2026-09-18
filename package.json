@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Sistema Corporativo de Treinamento, Avaliação e Rastreamentabilidade para Manutenção de Infraestrutura Elétrica Crítica",
   "engines": {
-    "node": ">=18.17.0"
+    "node": "20.x"
   },
   "scripts": {
     "dev": "node server/index.cjs",
@@ -35,9 +35,11 @@
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.10.0",
-    "better-sqlite3": "^9.2.0",
-    "drizzle-kit": "^0.20.0",
     "tsx": "^4.7.0",
     "typescript": "^5.3.0"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^9.2.0",
+    "drizzle-kit": "^0.20.0"
   }
 }

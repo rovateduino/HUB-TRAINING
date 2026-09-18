@@ -35,6 +35,6 @@
   "env": {
     "NODE_ENV": "production"
   },
-  "installCommand": "npm install --no-audit --no-fund",
+  "installCommand": "npm install --no-audit --no-fund --omit=dev",
   "buildCommand": "npm run build"
 }

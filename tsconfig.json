@@ -13,6 +13,6 @@
     "outDir": "./dist",
     "rootDir": "."
   },
-  "include": ["database/**/*", "server/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["types/**/*", "server/**/*"],
+  "exclude": ["node_modules", "dist", "database"]
 }
