@@ -14,6 +14,8 @@
     "seed:lessons": "node database/seed_lessons.cjs",
     "seed:nr10": "node database/seed_nr10.cjs",
     "seed:nr10:firestore": "node scripts/seed_nr10_firestore.cjs",
+    "seed:ac": "node database/seed_ac.cjs",
+    "seed:ac:firestore": "node scripts/seed_ac_firestore.cjs",
     "test": "node tests/run.js",
     "test:progress": "node tests/test_progress.cjs",
     "test:audit": "node tests/test_audit.cjs",
