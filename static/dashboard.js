@@ -1081,8 +1081,8 @@ async function loadCertificate() {
         ${revoked.length ? `<p class="muted-text">Certificado(s) anterior(es) revogado(s): <strong class="mono">${revoked.map(escHtml).join(', ')}</strong> — complete as etapas para nova emissão.</p>` : ''}
         ${banner}
         <div class="cert-progress-list">
-          <div class="cert-progress-row"><span>✓/○ 17/17 módulos</span>${badge(done(a.modules && a.modules.done, a.modules && a.modules.total), '✓', '○')} <strong>${li(a.modules && a.modules.done, a.modules && a.modules.total)}</strong></div>
-          <div class="cert-progress-row"><span>17/17 lições</span><strong>${li(a.lessons && a.lessons.done, a.lessons && a.lessons.total)}</strong></div>
+          <div class="cert-progress-row"><span>Módulos da cartilha</span>${badge(done(a.modules && a.modules.done, a.modules && a.modules.total), '✓', '○')} <strong>${li(a.modules && a.modules.done, a.modules && a.modules.total)}</strong></div>
+          <div class="cert-progress-row"><span>Lições da cartilha</span><strong>${li(a.lessons && a.lessons.done, a.lessons && a.lessons.total)}</strong></div>
           <div class="cert-progress-row"><span>Checkpoints concluídos</span><strong>${li(a.checkpoints && a.checkpoints.done, a.checkpoints && a.checkpoints.total)}</strong></div>
           <div class="cert-progress-row"><span>Simulado realizado (30/30)</span><strong>${li(q.answered, q.total)}</strong></div>
           <div class="cert-progress-row"><span>Avaliação teórica APROVADA (mín. 23/30)</span>${badge(!!q.approved, q.approved ? `✓ ${q.score}/30` : '○', '○ PENDENTE')}</div>
@@ -1415,7 +1415,7 @@ async function manageUser(userId) {
       </div>
       <div class="cert-actions"><button class="btn btn-primary" onclick="saveManagedLessons()">Salvar cartilha</button>
       <button class="btn btn-secondary" onclick="markManagedCheckpoints()">Marcar checkpoints verificados</button></div>
-      <p class="muted-text">Pré-requisito da liberação excepcional: cartilha 17/17 <strong>e</strong> checkpoints (use os dois botões acima).</p>
+      <p class="muted-text">Pré-requisito da liberação excepcional: cartilha completa <strong>e</strong> checkpoints (use os dois botões acima).</p>
       <h3 style="margin:16px 0 8px">Avaliação prática (como ADMIN)</h3>
       <div class="admin-filters" style="flex-direction:column;align-items:stretch">
         <label>Data <input type="date" id="mngDate" value="${escHtml((ev && ev.evaluation_date) || new Date().toISOString().slice(0, 10))}"></label>

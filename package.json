@@ -12,6 +12,8 @@
     "migrate": "node database/migrate.cjs",
     "seed": "node database/seed.cjs",
     "seed:lessons": "node database/seed_lessons.cjs",
+    "seed:nr10": "node database/seed_nr10.cjs",
+    "seed:nr10:firestore": "node scripts/seed_nr10_firestore.cjs",
     "test": "node tests/run.js",
     "test:progress": "node tests/test_progress.cjs",
     "test:audit": "node tests/test_audit.cjs",
