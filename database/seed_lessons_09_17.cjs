@@ -10,7 +10,7 @@ const LESSONS = [
 <p>Fluxo informado para a atividade de manutenção preventiva em HUB/Site.</p>
 <h3>Fluxo</h3>
 <ol>
-<li>Janela normalmente 21:00–06:45.</li>
+<li>Janela normalmente 01:00–05:00.</li>
 <li>Chegada ao HUB/Site com equipamentos de medição, ferramentas adequadas e EPIs/EPCs.</li>
 <li>Abertura do Ticket de Entrada e acionamento da atividade.</li>
 <li>Aguardar autorização do Site Management Center (Centro de Gerenciamento do Site).</li>

@@ -10,7 +10,7 @@ const QUESTIONS = [
 ['Redundância','No fluxograma estudado, UPS 1 e UPS 2 são apresentados como:',['Equipamentos sem relação entre si','Redundância um do outro','Dois geradores','Dois QDF'],1],
 ['Redundância','FCC 1 e FCC 2 são apresentados no material como:',['Redundância um do outro','Dois QTA','Dois QFAC','Dois bancos de UPS'],0],
 ['Climatização','Qual é o caminho simplificado da climatização mostrado no fluxograma?',['QDGE → QFAC → evaporadoras/condensadoras → climatização do Data Center','UPS → QDF → evaporadoras → QTA','FCC → QDNB → climatização','QDT → QDCC → climatização'],0],
-['Operação','Qual é a janela de manutenção informada para as atividades?',['06:00 às 12:00','12:00 às 18:00','18:00 às 00:00','21:00 às 06:45'],3],
+['Operação','Qual é a janela de manutenção informada para as atividades?',['06:00 às 12:00','12:00 às 18:00','18:00 às 00:00','01:00 às 05:00'],3],
 ['Ticket','Antes de iniciar uma atividade que depende de autorização, o profissional deve:',['Começar pelas medições e abrir o ticket depois','Entender o ticket e aguardar a liberação/autorização do Centro de Gerenciamento do Site','Desligar o QDGE imediatamente','Iniciar somente se estiver sozinho'],1],
 ['Ticket','Qual informação é importante conferir no ticket?',['Somente o nome do técnico','Somente o horário','Site, janela, atividade, equipamento/andar afetado, responsáveis e observações/restrições','Somente a empresa'],2],
 ['Equipe','Como normalmente é dividida a atividade entre duas pessoas?',['Uma mede e a outra registra/confere os dados','Uma trabalha e a outra fica sem função','As duas fazem somente relatório','As duas ficam somente aguardando o ticket'],0],

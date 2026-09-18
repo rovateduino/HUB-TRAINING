@@ -39,7 +39,7 @@ const NEW_CP = [
   ['Fontes de Corrente Contínua', 'Como FCC 1 e FCC 2 são apresentados?', ['Redundância um do outro', 'Dois QTA', 'Dois QFAC', 'Dois bancos de UPS'], 0],
   ['Bancos de Baterias UPS e FCC', 'Como as baterias são avaliadas na preventiva?', ['Somente pela tensão total', 'Uma a uma, em flutuação e descarga, com testes complementares quando necessário', 'Somente visualmente', 'Somente pelo ano de fabricação'], 1],
   ['Sistema de Climatização', 'Qual é o caminho da climatização?', ['QDGE → QFAC → evaporadoras/condensadoras → climatização', 'UPS → QDF → evaporadoras → QTA', 'FCC → QDNB → climatização', 'QDT → QDCC → climatização'], 0],
-  ['Rotina da Manutenção Preventiva', 'Qual é a janela de manutenção informada?', ['06:00 às 12:00', '12:00 às 18:00', '18:00 às 00:00', '21:00 às 06:45'], 3],
+  ['Rotina da Manutenção Preventiva', 'Qual é a janela de manutenção informada?', ['06:00 às 12:00', '12:00 às 18:00', '18:00 às 00:00', '01:00 às 05:00'], 3],
   ['Medições Elétricas AC e DC', 'Quais são exemplos de pontos de medição de tensão AC?', ['Padrão de Entrada, QTA, QDGE, QDNB, PDT e QFAC', 'Somente QDF e QDCC', 'Somente bancos de baterias', 'Somente FCC'], 0],
   ['Medição de Corrente dos Circuitos', 'Ao encontrar corrente elevada, qual sequência é adequada?', ['Trocar o disjuntor imediatamente', 'Identificar circuito/rack, verificar carga e redundância e avaliar balanceamento', 'Desligar todas as UPS', 'Ignorar se a tensão estiver normal'], 1],
   ['Inspeção e Anormalidades', 'O que a inspeção preventiva deve identificar?', ['Apenas temperatura ambiente', 'Aquecimento, corrente/tensão anormal, degradação e anormalidades em baterias/quadros', 'Apenas marca dos racks', 'Apenas horário'], 1],

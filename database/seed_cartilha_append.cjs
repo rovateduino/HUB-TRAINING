@@ -27,7 +27,7 @@ const appends = {
 <div class="procedure-box"><strong>🛠️ Como observar:</strong> flutuação mantém o banco preparado para atuar; descarga ocorre durante falta de energia ou em procedimento específico (M14). Compare sempre o <strong>comportamento de cada elemento</strong> — uma bateria fora da curva do grupo merece investigação (M13).</div>`,
 
   10: `
-<div class="concept-box"><strong>📘 Janela de trabalho:</strong> normalmente <strong>21:00 às 06:45</strong>. Fora dela as atividades necessitam autorização/justificativa específica.</div>
+<div class="concept-box"><strong>📘 Janela de trabalho:</strong> normalmente <strong>01:00 às 05:00</strong>. Fora dela as atividades necessitam autorização/justificativa específica.</div>
 <div class="procedure-box"><strong>🛠️ Chegada ao local:</strong> reunir equipamentos de medição + ferramentas; conferir EPIs/EPCs aplicáveis; identificar qual atividade está programada antes de tocar em qualquer equipamento.</div>
 <div class="procedure-box"><strong>🛠️ Ticket de entrada:</strong> o registro deve permitir identificar: <em>local, data, horário, atividade, equipamento, responsáveis, restrições e observações</em>. Sem ticket/acionamento a atividade não inicia.</div>
 <div class="attention-box"><strong>⚠️ Autorização obrigatória:</strong> aguardar o aval do Site Management Center (SMC). A atividade não deve começar antes da autorização necessária, mesmo que tudo pareça pronto.</div>

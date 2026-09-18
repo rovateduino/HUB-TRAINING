@@ -30,7 +30,7 @@ const quizByLesson = {
     { q: 'Quando se pode realizar reposição de água em baterias que exigem manutenção?', a: 'Apenas se previsto pelo fabricante e pelo procedimento aplicável; nunca "porque parece baixa".' }
   ],
   10: [
-    { q: 'Qual é a janela de trabalho normalmente utilizada para a preventiva?', a: '21:00 às 06:45.' },
+    { q: 'Qual é a janela de trabalho normalmente utilizada para a preventiva?', a: '01:00 às 05:00.' },
     { q: 'A atividade pode começar antes da autorização do Site Management Center?', a: 'Não. A atividade não deve começar antes da autorização necessária.' },
     { q: 'Por que a rotina normalmente utiliza dois profissionais?', a: 'Um mede, o outro registra/acompanha/confere — reduz erros de registro e aumenta a rastreabilidade.' }
   ],

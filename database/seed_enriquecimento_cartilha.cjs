@@ -653,7 +653,7 @@ Em operação normal, o retificador converte AC em DC, alimenta a carga DC e man
 <p>A manutenção preventiva não começa no multímetro. Ela começa na preparação: chegada, instrumentos, ferramentas, EPI/EPC, identificação da atividade e autorização. Cada etapa existe por um motivo e nenhuma deve ser pulada.</p>
 
 <h3>Janela de trabalho</h3>
-<div class="reference-box"><strong>Referência operacional informada:</strong> a janela de preventiva normalmente ocorre das <strong>21:00 às 06:45</strong>. Esse horário é referência do projeto e não uma regra universal — deve ser confirmado no ticket do local. Fora dela, as atividades necessitam autorização/justificativa específica.</div>
+<div class="reference-box"><strong>Referência operacional informada:</strong> a janela de preventiva normalmente ocorre das <strong>01:00 às 05:00</strong>. Esse horário é referência do projeto e não uma regra universal — deve ser confirmado no ticket do local. Fora dela, as atividades necessitam autorização/justificativa específica.</div>
 
 <h3>Etapas da rotina (por que cada etapa existe)</h3>
 <ol>
@@ -715,7 +715,7 @@ Em operação normal, o retificador converte AC em DC, alimenta a carga DC e man
 
 <h3>Ao final desta aula, você deve ser capaz de:</h3>
 <ul class="checklist-aula">
-  <li>☐ Explicar a janela de trabalho informada (21:00–06:45) como referência do projeto.</li>
+  <li>☐ Explicar a janela de trabalho informada (01:00–05:00) como referência do projeto.</li>
   <li>☐ Descrever as etapas da rotina do início ao fim.</li>
   <li>☐ Explicar por que a autorização é obrigatória antes do início.</li>
   <li>☐ Explicar por que a rotina normalmente usa dois profissionais.</li>
