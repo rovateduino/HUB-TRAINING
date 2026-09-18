@@ -30,3 +30,5 @@ scripts/_tmp_*.cjs
 
 # ===== NODE =====
 node_modules/
+
+*.backup-*
