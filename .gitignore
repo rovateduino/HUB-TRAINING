@@ -1,0 +1,32 @@
+.venv/
+__pycache__/
+training.db
+*.pyc
+.env
+.env.*
+!.env.example
+
+# ===== FIREBASE SEGREDO (NÃO COMMITAR) =====
+firebase-service-account.json
+*.service-account.json
+firebase-service-key.json
+backup-pre-migracao*.json
+backup-pre-migracao*.zip
+*.gpg
+.firebaserc
+firebase-debug.log
+firebase-debug.*.log
+
+# ===== TURSO / VERCEL (NÃO COMMITAR) =====
+Token de acesso TURSO.txt
+*.db-shm
+*.db-wal
+.vercel/
+*.log
+
+# ===== SCRIPTS TEMPORÁRIOS E BASES LOCAIS DE MIGRAÇÃO =====
+scripts/migrate_sqlite_to_firestore-local.db
+scripts/_tmp_*.cjs
+
+# ===== NODE =====
+node_modules/

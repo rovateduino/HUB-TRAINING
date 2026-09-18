@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HUB Training | Login</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    .hero-min { max-width: 520px; margin: 0 auto; padding: 60px 5vw 20px; text-align: center; }
+    .hero-min h1 { font-size: 38px; margin: 10px 0 14px; letter-spacing: -.03em; }
+    .hero-min p { color: var(--muted); margin: 0; }
+    .auth-shell { max-width: 480px; margin: 18px auto 40px; padding: 32px; }
+    .auth-shell form { display: grid; gap: 16px; }
+    .form-group { display: grid; gap: 6px; }
+    .form-group label { font-size: 14px; color: #d5e1ef; }
+    .form-help { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    input[type=email], input[type=password], input[type=text] {
+      display:block; width:100%; margin-top:0; background:#081525; border:1px solid #29425d; color:var(--text);
+      border-radius:10px; padding:12px 14px; font-size:15px; font-family:inherit;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    input[type=email]:focus, input[type=password]:focus, input[type=text]:focus {
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(68,215,182,.15);
+    }
+    .btn.full { width: 100%; padding: 13px; font-size: 15px; }
+    .auth-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+    .auth-actions a { font-size: 13px; }
+    .banner-success { background: #0e352c; color: #89f0d6; border: 1px solid #1f6a58; padding: 12px 14px; border-radius: 10px; margin-bottom: 10px; font-size: 14px; }
+    .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+    .logo-wrap { display:inline-flex; align-items:center; gap:10px; margin-bottom:6px; }
+    .logo-mark { display:grid; place-items:center; width:40px; height:40px; border-radius:12px; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#06131f; font-size:20px; }
+    .topbar-auth { justify-content: center; padding: 16px 5vw 4px; border-bottom: 0; background: transparent; backdrop-filter: none; position: static; }
+    .topbar-auth nav a { font-size: 13px; color: #9db0c8; }
+  </style>
+</head>
+<body>
+  <header class="topbar topbar-auth" role="banner">
+    <nav aria-label="Navegação rápida">
+      <a href="/">← Voltar para a Home</a>
+    </nav>
+  </header>
+
+  <main class="hero-min" id="hero">
+    <div class="logo-wrap" aria-hidden="true">
+      <span class="logo-mark">⚡</span>
+      <div style="text-align:left;">
+        <strong style="display:block; font-size:17px;">HUB Training</strong>
+        <small style="color:var(--muted); font-size:11px;">Acesso ao profissional</small>
+      </div>
+    </div>
+    <h1>Entrar</h1>
+    <p>Use seu e-mail e senha cadastrados.</p>
+  </main>
+
+  <section class="login auth-shell" aria-labelledby="login-title">
+    <h2 id="login-title" class="sr-only">Formulário de login</h2>
+
+    <div id="successBox" class="banner-success" role="status" style="display:none;"></div>
+    <div id="errorBox" class="error" role="alert" aria-live="polite" style="display:none;"></div>
+
+    <form id="loginForm" novalidate aria-describedby="formHelp">
+      <p id="formHelp" class="form-help" style="margin:0 0 -8px;">Campos obrigatórios.</p>
+
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" required autocomplete="username" aria-required="true"
+               aria-describedby="emailHelp" placeholder="voce@empresa.com.br">
+        <span id="emailHelp" class="form-help">O mesmo e-mail usado no cadastro.</span>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input id="password" name="password" type="password" minlength="6" required autocomplete="current-password"
+               aria-required="true" aria-describedby="pwdHelp">
+        <span id="pwdHelp" class="form-help">Mínimo 6 caracteres.</span>
+      </div>
+
+      <button type="submit" class="btn primary full">Entrar</button>
+
+      <div class="auth-actions">
+        <a href="/reset">Esqueci minha senha</a>
+        <a href="/register">Quero me cadastrar</a>
+      </div>
+      <hr style="border:0; border-top:1px solid var(--line); margin: 6px 0 0;">
+      <div class="auth-actions">
+        <a href="/">← Início</a>
+      </div>
+    </form>
+  </section>
+
+  <footer>
+    <small>© HUB Training • Manutenção Elétrica • Conteúdo de uso interno.</small>
+  </footer>
+
+  <script>
+  (function () {
+    const qs = new URLSearchParams(location.search);
+    const success = document.getElementById('successBox');
+    if (qs.get('registered') === '1') {
+      success.textContent = 'Cadastro concluído! Faça login para acessar o dashboard.';
+      success.style.display = 'block';
+    } else if (qs.get('reset') === '1') {
+      success.textContent = 'Senha redefinida com sucesso. Faça login com a nova senha.';
+      success.style.display = 'block';
+    }
+
+    const form = document.getElementById('loginForm');
+    const errBox = document.getElementById('errorBox');
+
+    function showError(msg) {
+      errBox.textContent = msg;
+      errBox.style.display = 'block';
+      errBox.focus && errBox.setAttribute('tabindex', '-1');
+    }
+
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      errBox.style.display = 'none';
+      success.style.display = 'none';
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const password = document.getElementById('password').value;
+      if (!email || !password) return showError('Informe e-mail e senha.');
+      const btn = form.querySelector('button[type=submit]');
+      btn.disabled = true; btn.textContent = 'Entrando...';
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          if (res.status === 429) return showError('Muitas tentativas. Aguarde alguns minutos.');
+          return showError(data && data.error ? data.error : 'Falha ao entrar. Verifique seus dados.');
+        }
+        if (!data.token) return showError('Resposta inválida do servidor.');
+        try { localStorage.setItem('hub_token', data.token); } catch { /* storage indisponível */ }
+        try { localStorage.setItem('hub_user', JSON.stringify(data.user || {})); } catch {}
+        location.href = '/dashboard';
+      } catch (e) {
+        showError('Falha de conexão com o servidor.');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Entrar';
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

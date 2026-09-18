@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HUB Training | Recuperar Senha</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    .hero-min { max-width: 560px; margin: 0 auto; padding: 60px 5vw 14px; text-align: center; }
+    .hero-min h1 { font-size: 36px; margin: 10px 0 12px; letter-spacing: -.03em; }
+    .hero-min p { color: var(--muted); margin: 0; }
+    .auth-shell { max-width: 620px; margin: 18px auto 40px; padding: 32px; }
+    .form-group { display: grid; gap: 6px; }
+    .form-group label { font-size: 14px; color: #d5e1ef; }
+    .form-help { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    input[type=email], input[type=password], input[type=text] {
+      display:block; width:100%; margin-top:0; background:#081525; border:1px solid #29425d; color:var(--text);
+      border-radius:10px; padding:12px 14px; font-size:15px; font-family:inherit;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    input:focus { outline:none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(68,215,182,.15); }
+    .btn.full { width:100%; padding:13px; font-size:15px; }
+    .auth-actions { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+    .auth-actions a { font-size:13px; }
+    .row-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    @media(max-width:560px){ .row-2{grid-template-columns:1fr;} }
+    .stepper { display:flex; gap:10px; align-items:center; justify-content:center; margin: 0 0 22px; }
+    .step {
+      display:inline-flex; align-items:center; gap:8px; padding:7px 13px; border-radius:999px;
+      border:1px solid var(--line); background: #0a1a2d; color: var(--muted); font-size:13px;
+    }
+    .step.active { border-color: var(--accent); color: var(--text); background: #0f2a3a; }
+    .step.active b { color: var(--accent); }
+    .token-card {
+      display:grid; gap:12px; padding:20px; border-radius:16px;
+      background: linear-gradient(180deg, #0f3a33, #092540);
+      border:1px solid #2e7263;
+    }
+    .token-card code {
+      display:block; padding:14px 16px; border-radius:12px; background:#04111c;
+      border:1px dashed #377466; color:#8df1d5; font-size:14px; letter-spacing:.3px;
+      overflow-x:auto; word-break: break-all;
+      outline: none;
+    }
+    .token-card .row { display:flex; gap:8px; justify-content:space-between; align-items:center; flex-wrap:wrap; }
+    .token-card .row small { color: #aef3dd; font-size:12px; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .info-box { background:#0d1a2b; border:1px solid #29425d; border-radius:12px; padding:12px 14px; color:#cbd9e8; font-size:13px; }
+    .logo-wrap { display:inline-flex; align-items:center; gap:10px; margin-bottom:6px; }
+    .logo-mark { display:grid; place-items:center; width:40px; height:40px; border-radius:12px; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#06131f; font-size:20px; }
+    .topbar-auth { justify-content: center; padding: 16px 5vw 4px; border-bottom: 0; background: transparent; backdrop-filter: none; position: static; }
+    .topbar-auth nav a { font-size:13px; color:#9db0c8; }
+    .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+    .form-inline { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
+    @media(max-width:560px){ .form-inline{grid-template-columns:1fr;} }
+    .banner-ok { background:#0e352c; color:#89f0d6; border:1px solid #1f6a58; padding:12px 14px; border-radius:10px; font-size:14px; margin-bottom:12px; }
+  </style>
+</head>
+<body>
+  <header class="topbar topbar-auth">
+    <nav aria-label="Navegação rápida"><a href="/login">← Voltar para o Login</a></nav>
+  </header>
+
+  <main class="hero-min">
+    <div class="logo-wrap" aria-hidden="true">
+      <span class="logo-mark">⚡</span>
+      <div style="text-align:left;">
+        <strong style="display:block; font-size:17px;">HUB Training</strong>
+        <small style="color:var(--muted); font-size:11px;">Recuperação de senha</small>
+      </div>
+    </div>
+    <h1>Esqueci minha senha</h1>
+    <p>Dois passos para redefinir sua senha de forma segura.</p>
+  </main>
+
+  <section class="login auth-shell" aria-labelledby="reset-title">
+    <h2 id="reset-title" class="sr-only">Fluxo de recuperação</h2>
+
+    <div class="stepper" role="list" aria-label="Passos">
+      <div class="step active" id="s1" role="listitem"><b>1</b> Gerar token</div>
+      <div class="step" id="s2" role="listitem"><b>2</b> Nova senha</div>
+    </div>
+
+    <div id="errorBox" class="error" role="alert" aria-live="polite" style="display:none;"></div>
+    <div id="infoBox" class="banner-ok" role="status" style="display:none;"></div>
+
+    <!-- VIEW A: Pedido de reset -->
+    <form id="view-request" class="view active" novalidate aria-labelledby="pedidoTitle">
+      <h3 id="pedidoTitle" class="sr-only">Passo 1 — Pedido de recuperação</h3>
+      <div class="info-box" style="margin-bottom:14px;">
+        ℹ️ Informe o e-mail cadastrado. Se existir, um <strong style="color:var(--accent)">Token de Recuperação</strong> será exibido em tela.
+        Não enviamos e-mails: <strong>copie o token</strong> ou peça um ao administrador.
+      </div>
+      <div class="form-inline">
+        <div class="form-group" style="flex:1;">
+          <label for="email">E-mail</label>
+          <input id="email" name="email" type="email" required autocomplete="email"
+                 aria-describedby="emailHelp" placeholder="voce@empresa.com.br">
+          <span id="emailHelp" class="form-help">O e-mail que usou no cadastro.</span>
+        </div>
+        <button type="submit" class="btn primary">Gerar token</button>
+      </div>
+
+      <div id="tokenCard" class="token-card" style="margin-top:18px; display:none;" role="region" aria-live="polite" tabindex="-1">
+        <div class="row">
+          <strong style="color:#aef3dd;">🔑 Token de Recuperação (válido por 1 hora)</strong>
+          <small id="tokenExpire"></small>
+        </div>
+        <code id="tokenValue" tabindex="0"></code>
+        <div class="row">
+          <button type="button" id="copyBtn" class="btn primary">📋 Copiar Token</button>
+          <button type="button" id="goStep2" class="btn ghost">Ir para etapa 2 →</button>
+        </div>
+      </div>
+
+      <div class="auth-actions" style="margin-top:18px;">
+        <a href="/login">← Entrar com senha</a>
+        <a href="/register">Não tenho conta</a>
+      </div>
+    </form>
+
+    <!-- VIEW B: Confirmação / Nova senha -->
+    <form id="view-confirm" class="view" novalidate aria-labelledby="confTitle">
+      <h3 id="confTitle" class="sr-only">Passo 2 — Nova senha</h3>
+      <div class="form-group">
+        <label for="token">Token de Recuperação</label>
+        <input id="token" name="token" type="text" required spellcheck="false" autocomplete="off"
+               aria-describedby="tokenHelp"
+               placeholder="Cole o token de 40 caracteres aqui">
+        <span id="tokenHelp" class="form-help">Recebido na etapa 1 ou fornecido pelo administrador.</span>
+      </div>
+      <div class="row-2">
+        <div class="form-group">
+          <label for="new_password">Nova senha</label>
+          <input id="new_password" name="new_password" type="password" minlength="6" required
+                 autocomplete="new-password" aria-describedby="newPwdHelp">
+          <span id="newPwdHelp" class="form-help">Mínimo 6 caracteres.</span>
+        </div>
+        <div class="form-group">
+          <label for="confirm_password">Confirmar nova senha</label>
+          <input id="confirm_password" name="confirm_password" type="password" minlength="6" required
+                 autocomplete="new-password">
+        </div>
+      </div>
+      <button type="submit" class="btn primary full">Redefinir senha</button>
+      <div class="auth-actions" style="margin-top:14px;">
+        <button type="button" id="backToStep1" class="btn ghost" style="margin:0; padding:8px 12px;">← Etapa 1</button>
+        <a href="/login">Lembrei da senha</a>
+      </div>
+    </form>
+  </section>
+
+  <footer><small>© HUB Training • Manutenção Elétrica • Conteúdo de uso interno.</small></footer>
+
+  <script>
+  (function () {
+    const errBox = document.getElementById('errorBox');
+    const infoBox = document.getElementById('infoBox');
+    const vReq = document.getElementById('view-request');
+    const vConf = document.getElementById('view-confirm');
+    const s1 = document.getElementById('s1');
+    const s2 = document.getElementById('s2');
+    function showError(m){ errBox.textContent=m; errBox.style.display='block'; infoBox.style.display='none'; }
+    function showInfo(m){ infoBox.textContent=m; infoBox.style.display='block'; errBox.style.display='none'; }
+    function clearMsg(){ errBox.style.display='none'; infoBox.style.display='none'; }
+    function setStep(n){
+      if (n===1){ vReq.classList.add('active'); vConf.classList.remove('active'); s1.classList.add('active'); s2.classList.remove('active'); }
+      if (n===2){ vReq.classList.remove('active'); vConf.classList.add('active'); s2.classList.add('active'); s1.classList.remove('active'); }
+    }
+
+    const qs = new URLSearchParams(location.search);
+    if (qs.get('token')) {
+      document.getElementById('token').value = qs.get('token');
+      setStep(2);
+    }
+
+    vReq.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      clearMsg();
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      if (!email) return showError('Informe um e-mail.');
+      const btn = vReq.querySelector('button[type=submit]');
+      btn.disabled = true; btn.textContent = 'Gerando...';
+      try {
+        const res = await fetch('/api/auth/reset/request', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json().catch(()=>({}));
+        if (!res.ok) return showError(data.error || 'Falha ao gerar token.');
+        if (data.token_visible_for_copy && data.token) {
+          document.getElementById('tokenValue').textContent = data.token;
+          document.getElementById('tokenExpire').textContent = 'Expira em: ' + new Date(data.expires_at).toLocaleString('pt-BR');
+          document.getElementById('tokenCard').style.display = 'grid';
+          setTimeout(()=>document.getElementById('tokenCard').focus(), 50);
+          showInfo('Token gerado. Copie e use na etapa 2 dentro de 1 hora.');
+        } else {
+          showInfo(data.message || 'Se o e-mail existir, um token será gerado. Contate o administrador se não receber.');
+          document.getElementById('tokenCard').style.display = 'none';
+        }
+      } catch(e){ showError('Falha de conexão com o servidor.'); }
+      finally { btn.disabled=false; btn.textContent='Gerar token'; }
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', async () => {
+      const txt = document.getElementById('tokenValue').textContent;
+      const b = document.getElementById('copyBtn');
+      try {
+        await navigator.clipboard.writeText(txt);
+        const orig = b.textContent;
+        b.textContent = '✅ Copiado!';
+        setTimeout(()=>b.textContent=orig, 1800);
+      } catch {
+        const r = document.createRange();
+        r.selectNodeContents(document.getElementById('tokenValue'));
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      }
+    });
+
+    document.getElementById('goStep2').addEventListener('click', () => {
+      const t = document.getElementById('tokenValue').textContent;
+      if (t) document.getElementById('token').value = t;
+      setStep(2);
+    });
+    document.getElementById('backToStep1').addEventListener('click', () => setStep(1));
+
+    vConf.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      clearMsg();
+      const body = {
+        token: document.getElementById('token').value.trim(),
+        new_password: document.getElementById('new_password').value,
+        confirm_password: document.getElementById('confirm_password').value
+      };
+      if (!body.token) return showError('Informe o token de recuperação.');
+      if (body.new_password.length < 6) return showError('Nova senha deve ter ao menos 6 caracteres.');
+      if (body.new_password !== body.confirm_password) return showError('As senhas não conferem.');
+      const btn = vConf.querySelector('button[type=submit]');
+      btn.disabled=true; btn.textContent='Redefinindo...';
+      try {
+        const res = await fetch('/api/auth/reset/confirm', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(body)
+        });
+        const data = await res.json().catch(()=>({}));
+        if (!res.ok) return showError(data.error || 'Falha ao redefinir. Verifique o token.');
+        location.href = '/login?reset=1';
+      } catch(e){ showError('Falha de conexão com o servidor.'); }
+      finally { btn.disabled=false; btn.textContent='Redefinir senha'; }
+    });
+  })();
+  </script>
+</body>
+</html>

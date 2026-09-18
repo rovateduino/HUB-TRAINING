@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verificação de Certificado — HUB TRAINING</title>
+<style>
+  :root {
+    --navy: #0f2a4a; --blue: #1d5fb8; --blue-gray: #5b6b82;
+    --bg: #eef2f7; --card: #ffffff; --border: #dbe3ee;
+    --green: #15803d; --green-bg: #e7f6ec; --red: #b91c1c; --red-bg: #fdecec;
+    --amber: #b45309; --amber-bg: #fef3e2;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", Roboto, Arial, sans-serif; background: var(--bg); color: #1f2a3a; }
+  .top { background: var(--navy); color: #fff; padding: 18px 24px; display: flex; align-items: center; gap: 12px; }
+  .top .bolt { background: var(--blue); border-radius: 8px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .top strong { font-size: 18px; letter-spacing: .04em; }
+  .wrap { max-width: 640px; margin: 32px auto; padding: 0 16px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 6px 24px rgba(15,42,74,.08); padding: 28px; }
+  h1 { font-size: 20px; margin: 0 0 4px; color: var(--navy); }
+  .sub { color: var(--blue-gray); font-size: 14px; margin-bottom: 18px; }
+  .badge { display: inline-block; padding: 6px 14px; border-radius: 999px; font-weight: 700; font-size: 14px; margin: 8px 0 16px; }
+  .ok { background: var(--green-bg); color: var(--green); }
+  .bad { background: var(--red-bg); color: var(--red); }
+  .warn { background: var(--amber-bg); color: var(--amber); }
+  dl { margin: 0; display: grid; grid-template-columns: 150px 1fr; gap: 8px 12px; font-size: 15px; }
+  dt { color: var(--blue-gray); }
+  dd { margin: 0; font-weight: 600; }
+  .mono { font-family: Consolas, monospace; }
+  .loading, .error { text-align: center; color: var(--blue-gray); padding: 24px 0; }
+  .foot { text-align: center; color: var(--blue-gray); font-size: 12px; margin-top: 18px; }
+  @media (max-width: 560px) { dl { grid-template-columns: 1fr; } dt { margin-top: 8px; } }
+</style>
+</head>
+<body>
+  <div class="top"><div class="bolt">⚡</div><strong>HUB TRAINING</strong></div>
+  <div class="wrap">
+    <div class="card">
+      <h1>VERIFICAÇÃO DE AUTENTICIDADE</h1>
+      <div class="sub">Consulta pública de autenticidade</div>
+      <div id="out"><div class="loading">Verificando…</div></div>
+    </div>
+    <div class="foot">HUB Training — Treinamento profissional interno</div>
+  </div>
+<script>
+(function () {
+  var parts = window.location.pathname.split('/').filter(Boolean);
+  var number = (parts[parts.length - 1] || '').toUpperCase();
+  var out = document.getElementById('out');
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    try { return new Date(iso).toLocaleDateString('pt-BR'); } catch (e) { return esc(iso); }
+  }
+  if (!number) { out.innerHTML = '<div class="error">Código não informado.</div>'; return; }
+  fetch('/api/certificates/validate/' + encodeURIComponent(number))
+    .then(function (r) { return r.json().then(function (b) { return { s: r.status, b: b }; }); })
+    .then(function (r) {
+      if (r.s === 404 || r.b.status === 'NOT_FOUND') {
+        out.innerHTML = '<span class="badge bad">CERTIFICADO NÃO ENCONTRADO</span><p>O código <span class="mono">' + esc(number) + '</span> não consta na base do HUB Training.</p>';
+        return;
+      }
+      var c = r.b.certificate || {};
+      if (r.b.status === 'REVOKED' || c.status === 'REVOKED') {
+        out.innerHTML = '<span class="badge warn">CERTIFICADO REVOGADO</span>'
+          + '<dl><dt>Código</dt><dd class="mono">' + esc(c.certificate_number || number) + '</dd>'
+          + '<dt>Participante</dt><dd>' + esc(c.participant) + '</dd></dl>'
+          + '<p>Este certificado foi revogado e não é mais válido.</p>';
+        return;
+      }
+      var th = c.theory || {};
+      var pr = c.practical || null;
+      var perf = (th.score != null && th.total != null ? th.score + '/' + th.total : '—')
+        + (th.percentage != null ? ' — ' + String(th.percentage).replace('.', ',') + '%' : '');
+      var thLabel = (th.result === 'NÃO APROVADO' ? 'NÃO APROVADO' : 'APROVADO') + ' — ' + perf;
+      var prLabel = !pr ? '—' : (pr.result === 'NAO_APTO' ? 'NÃO APTO' : 'APTO');
+      out.innerHTML = '<span class="badge ok">CERTIFICADO VÁLIDO ✓</span>'
+        + '<dl>'
+        + '<dt>Código</dt><dd class="mono">' + esc(c.certificate_number) + '</dd>'
+        + '<dt>Participante</dt><dd>' + esc(c.participant) + '</dd>'
+        + '<dt>Treinamento</dt><dd>' + esc(c.training) + '</dd>'
+        + '<dt>Modalidade</dt><dd>' + esc(c.modality || '—') + '</dd>'
+        + '<dt>Data de conclusão</dt><dd>' + fmtDate(c.completion_date) + '</dd>'
+        + '<dt>Data de emissão</dt><dd>' + fmtDate(c.issue_date) + '</dd>'
+        + '<dt>Carga horária</dt><dd>' + esc(c.workload_hours || '—') + '</dd>'
+        + '<dt>Resultado final</dt><dd>' + esc(c.result_final || 'TREINAMENTO CONCLUÍDO') + '</dd>'
+        + '<dt>Avaliação teórica</dt><dd>' + esc(thLabel) + '</dd>'
+        + '<dt>Avaliação prática</dt><dd>' + esc(prLabel) + '</dd>'
+        + '</dl>';
+    })
+    .catch(function () { out.innerHTML = '<div class="error">Falha de conexão. Tente novamente.</div>'; });
+})();
+</script>
+</body>
+</html>

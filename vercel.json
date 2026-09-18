@@ -1,0 +1,44 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "builds": [
+    {
+      "src": "server/index.cjs",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "static/**",
+          "home.html",
+          "dashboard.html",
+          "validar.html",
+          "robots.txt"
+        ]
+      }
+    }
+  ],
+  "functions": {
+    "server/index.cjs": {
+      "maxDuration": 60
+    }
+  },
+  "routes": [
+    { "src": "/static/(.*)", "dest": "/static/$1" },
+    { "src": "/",                    "dest": "/server/index.cjs" },
+    { "src": "/dashboard",           "dest": "/server/index.cjs" },
+    { "src": "/simulado",            "dest": "/server/index.cjs" },
+    { "src": "/login",               "dest": "/server/index.cjs" },
+    { "src": "/register",            "dest": "/server/index.cjs" },
+    { "src": "/reset",               "dest": "/server/index.cjs" },
+    { "src": "/admin/login",         "dest": "/server/index.cjs" },
+    { "src": "/admin",               "dest": "/server/index.cjs" },
+    { "src": "/validar/(.*)",        "dest": "/server/index.cjs" },
+    { "src": "/health",              "dest": "/server/index.cjs" },
+    { "src": "/api/(.*)",            "dest": "/server/index.cjs" },
+    { "src": "/(.*)",                "dest": "/server/index.cjs" }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "installCommand": "npm install --no-audit --no-fund",
+  "buildCommand": "npm run build"
+}

@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HUB TRAINING - Dashboard</title>
+  <link rel="stylesheet" href="/static/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :focus-visible { outline: 3px solid #3b82f6; outline-offset: 2px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    @media (max-width: 560px) {
+      .quiz-intro { padding: 24px; }
+      .quiz-question { padding: 20px; }
+      .quiz-results { padding: 28px 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" aria-label="Navegação principal">
+      <div class="sidebar-header">
+        <div class="logo">
+          <i class="fas fa-bolt" aria-hidden="true"></i>
+          <span>HUB TRAINING</span>
+        </div>
+        <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Recolher ou expandir o menu" title="Recolher/expandir menu">
+          <i class="fas fa-angles-left" aria-hidden="true"></i>
+        </button>
+      </div>
+      
+      <nav class="sidebar-nav" aria-label="Menu">
+        <a href="#dashboard" class="nav-item active" data-page="dashboard" aria-label="Início">
+          <i class="fas fa-home" aria-hidden="true"></i>
+          <span>Início</span>
+        </a>
+        <div class="sidebar-sec" aria-hidden="true">TREINAMENTO</div>
+        <a href="#study" class="nav-item" data-page="study" aria-label="Estudar Cartilha">
+          <i class="fas fa-book-open" aria-hidden="true"></i>
+          <span>Estudar Cartilha</span>
+        </a>
+        <a href="#quiz" class="nav-item" data-page="quiz" aria-label="Simulado Final">
+          <i class="fas fa-clipboard-list" aria-hidden="true"></i>
+          <span>Simulado Final</span>
+        </a>
+        <a href="#certificate" class="nav-item" data-page="certificate" aria-label="Certificado">
+          <i class="fas fa-certificate" aria-hidden="true"></i>
+          <span>Certificado</span>
+        </a>
+        <a href="#practical" class="nav-item eval-only" data-page="practical" aria-label="Avaliação Prática">
+          <i class="fas fa-clipboard-check" aria-hidden="true"></i>
+          <span>Avaliação Prática</span>
+        </a>
+        <a href="#help" class="nav-item" data-page="help" aria-label="Ajuda">
+          <i class="fas fa-question-circle" aria-hidden="true"></i>
+          <span>Ajuda</span>
+        </a>
+        <div class="sidebar-sec admin-only" aria-hidden="true">ADMINISTRAÇÃO</div>
+        <a href="#admin" class="nav-item admin-only" data-page="admin" aria-label="Área administrativa">
+          <i class="fas fa-shield-alt" aria-hidden="true"></i>
+          <span>Área ADM</span>
+        </a>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <i class="fas fa-bolt"></i>
+        <span>Conhecimento que mantém o seu HUB ativo.</span>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-left">
+          <button class="menu-btn" onclick="toggleMobileSidebar()" aria-label="Abrir o menu">
+            <i class="fas fa-bars" aria-hidden="true"></i>
+          </button>
+          <div class="logo-small">
+            <i class="fas fa-bolt"></i>
+            <span>HUB TRAINING</span>
+          </div>
+          <div class="breadcrumbs" id="topBreadcrumbs" aria-label="Breadcrumb">
+            <span>Início</span>
+            <i class="fas fa-chevron-right"></i>
+            <span>Treinamento</span>
+          </div>
+        </div>
+        
+        <div class="header-right">
+          <div class="notification">
+            <i class="fas fa-bell"></i>
+            <span class="badge">3</span>
+          </div>
+          <div class="user-profile">
+            <div class="user-info">
+              <span class="user-name" id="userName">João Silva</span>
+              <span class="user-role" id="userRole">Operador</span>
+            </div>
+            <div class="user-avatar">
+              <i class="fas fa-user"></i>
+            </div>
+          </div>
+          <button class="logout-btn" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <main class="page-content" aria-label="Conteúdo">
+        <!-- Dashboard Page -->
+        <div id="page-dashboard" class="page active">
+          <!-- Banner -->
+          <div class="banner banner-success">
+            <div class="banner-icon">
+              <i class="fas fa-bolt" aria-hidden="true"></i>
+            </div>
+            <div class="banner-content">
+              <h1 id="heroTitle">Treinamento de Manutenção Elétrica</h1>
+              <p id="heroSub">Prepare-se para compreender a infraestrutura elétrica, a rotina preventiva, as medições, as baterias, UPS, FCC, Infratel, a segurança e a avaliação final.</p>
+              <p id="bannerComplete" hidden><strong>Treinamento Completo!</strong> Você concluiu todos os módulos do curso.</p>
+              <p><span class="status-badge in-progress">Conteúdo PENDENTE DE VALIDAÇÃO TÉCNICA</span></p>
+              <div class="hero-ctas">
+                <button class="btn btn-primary" onclick="navigateTo('study')">
+                  <i class="fas fa-book-open" aria-hidden="true"></i> ESTUDAR CARTILHA
+                </button>
+                <button class="btn btn-outline" onclick="navigateTo('quiz')">
+                  SIMULADO FINAL <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress Cards -->
+          <div class="progress-cards">
+            <div class="card progress-card">
+              <div class="card-icon">
+                <i class="fas fa-book"></i>
+              </div>
+              <div class="card-content">
+                <span class="card-label">Módulos</span>
+                <span class="card-value" id="modulesValue">0 / 17</span>
+                <span class="card-status">Concluídos</span>
+              </div>
+            </div>
+            
+            <div class="card progress-card">
+              <div class="card-icon">
+                <i class="fas fa-play-circle"></i>
+              </div>
+              <div class="card-content">
+                <span class="card-label">Aulas</span>
+                <span class="card-value" id="lessonsValue">0%</span>
+                <span class="card-status">Concluídos</span>
+              </div>
+            </div>
+            
+            <div class="card progress-card">
+              <div class="card-icon">
+                <i class="fas fa-check-square"></i>
+              </div>
+              <div class="card-content">
+                <span class="card-label">Checkpoints</span>
+                <span class="card-value" id="checkpointsValue">0%</span>
+                <span class="card-status">Concluídos</span>
+              </div>
+            </div>
+            
+            <div class="card progress-card">
+              <div class="card-icon card-icon-star">
+                <i class="fas fa-star"></i>
+              </div>
+              <div class="card-content">
+                <span class="card-label">Progresso Geral</span>
+                <span class="card-value" id="generalValue">0%</span>
+                <span class="card-status">Finalizado</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- O que você vai aprender (prévia — resumos; conteúdo completo na cartilha) -->
+          <div class="learn-section" aria-label="O que você vai aprender">
+            <div class="section-header">
+              <h2>O que você vai aprender</h2>
+              <p>Uma prévia dos temas. O estudo completo acontece em <a href="#study" onclick="navigateTo('study');return false;">Estudar Cartilha</a>.</p>
+            </div>
+            <div class="learn-grid">
+              <div class="card learn-card"><i class="fas fa-network-wired" aria-hidden="true"></i><h3>Infraestrutura</h3><p>Conheça o caminho da energia e os principais quadros e sistemas.</p></div>
+              <div class="card learn-card"><i class="fas fa-plug" aria-hidden="true"></i><h3>UPS</h3><p>Entenda a função da UPS e sua relação com a continuidade das cargas.</p></div>
+              <div class="card learn-card"><i class="fas fa-battery-full" aria-hidden="true"></i><h3>FCC e Sistema DC</h3><p>Compreenda a alimentação em corrente contínua e os retificadores.</p></div>
+              <div class="card learn-card"><i class="fas fa-car-battery" aria-hidden="true"></i><h3>Baterias</h3><p>Aprenda conceitos de bancos, medições, testes e condições de operação.</p></div>
+              <div class="card learn-card"><i class="fas fa-tools" aria-hidden="true"></i><h3>Manutenção Preventiva</h3><p>Conheça a rotina de chegada, autorização, inspeção, medições e registro.</p></div>
+              <div class="card learn-card"><i class="fas fa-tachometer-alt" aria-hidden="true"></i><h3>Medições</h3><p>Entenda as principais medições AC e DC realizadas durante a preventiva.</p></div>
+              <div class="card learn-card"><i class="fas fa-bolt" aria-hidden="true"></i><h3>Corrente dos Circuitos</h3><p>Aprenda como avaliar corrente, circuito, rack, redundância e balanceamento.</p></div>
+              <div class="card learn-card"><i class="fas fa-microscope" aria-hidden="true"></i><h3>HIOKI</h3><p>Conheça o fluxo de medição e registro utilizando o BT3554-01.</p></div>
+              <div class="card learn-card"><i class="fas fa-clipboard-check" aria-hidden="true"></i><h3>Infratel</h3><p>Entenda o registro e encerramento das atividades.</p></div>
+              <div class="card learn-card"><i class="fas fa-hard-hat" aria-hidden="true"></i><h3>Segurança</h3><p>Conheça os princípios de segurança, NR-10, EPI/EPC, autorização e procedimentos.</p></div>
+            </div>
+          </div>
+
+          <!-- Como funciona o treinamento -->
+          <div class="steps-section" aria-label="Como funciona o treinamento">
+            <div class="section-header">
+              <h2>Como funciona o treinamento</h2>
+            </div>
+            <ol class="steps">
+              <li><span class="step-num">01</span><div><strong>ESTUDE</strong><p>Leia a cartilha completa e avance pelos módulos.</p></div></li>
+              <li><span class="step-num">02</span><div><strong>CONHEÇA A INFRAESTRUTURA</strong><p>Entenda o ambiente e o caminho da energia.</p></div></li>
+              <li><span class="step-num">03</span><div><strong>CONCLUA AS LIÇÕES</strong><p>Registre seu progresso. <a href="#progress" onclick="navigateTo('progress');return false;">Ver meu progresso</a>.</p></div></li>
+              <li><span class="step-num">04</span><div><strong>FAÇA O SIMULADO</strong><p>30 questões.</p></div></li>
+              <li><span class="step-num">05</span><div><strong>RESULTADO</strong><p>Regra atual: 23 acertos ou mais = APROVADO.</p></div></li>
+            </ol>
+          </div>
+
+          <!-- Modules Section (prévia rápida de navegação — conteúdo completo na cartilha) -->
+          <div class="modules-section">
+            <div class="section-header">
+              <h2>Acesso rápido aos módulos</h2>
+              <p>Prévia dos primeiros módulos. Para estudar, acesse a Cartilha completa.</p>
+              <button class="btn btn-primary" onclick="navigateTo('study')">
+                <i class="fas fa-book-open" aria-hidden="true"></i> Abrir Estudar Cartilha
+              </button>
+            </div>
+            
+            <div class="search-bar">
+              <i class="fas fa-search" aria-hidden="true"></i>
+              <label class="sr-only" for="moduleSearch">Buscar módulo</label>
+              <input type="text" id="moduleSearch" placeholder="Buscar módulo..." onkeyup="filterModules()">
+            </div>
+            
+            <div class="modules-grid" id="modulesGrid">
+              <!-- Modules will be loaded dynamically (prévia: 4 primeiros) -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Modules Page -->
+        <div id="page-modules" class="page">
+          <div class="section-header">
+            <h2>Módulos do Treinamento</h2>
+            <p>Selecione um módulo para acessar as aulas.</p>
+          </div>
+          <div class="modules-grid" id="allModulesGrid">
+            <!-- All modules will be loaded dynamically -->
+          </div>
+        </div>
+
+        <!-- Study Page: Estudar Cartilha (área de estudo com índice lateral tipo cartilha) -->
+        <div id="page-study" class="page" aria-label="Estudar Cartilha">
+          <div class="study-layout">
+            <aside class="study-toc card" aria-label="Índice da Cartilha">
+              <div class="study-toc-head">
+                <h3><i class="fas fa-list-ul" aria-hidden="true"></i> ÍNDICE DA CARTILHA</h3>
+                <p class="study-toc-legend">
+                  <span><i class="fas fa-check-circle" aria-hidden="true" style="color:#10b981"></i> Concluído</span> ·
+                  <span><i class="fas fa-clock" aria-hidden="true" style="color:#3b82f6"></i> Em andamento</span> ·
+                  <span><i class="fas fa-circle" aria-hidden="true" style="color:#9ca3af"></i> Não iniciado</span>
+                </p>
+              </div>
+              <div id="studyIndex" class="study-index"></div>
+            </aside>
+            <main class="study-main">
+              <div class="breadcrumbs-line">
+                <a href="#dashboard" onclick="navigateTo('dashboard');return false;">Início</a>
+                <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                <a href="#study" onclick="navigateTo('study');return false;">Estudar Cartilha</a>
+                <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                <span id="moduleCrumb">Módulo</span>
+              </div>
+              <div class="section-header">
+                <h2><i class="fas fa-book-open" aria-hidden="true"></i> Estudar Cartilha</h2>
+                <p>Cartilha digital completa: leia, avance pelos módulos, responda os checkpoints e registre seu progresso. <span class="status-badge in-progress">Conteúdo PENDENTE DE VALIDAÇÃO TÉCNICA</span></p>
+              </div>
+              <div class="card study-progress">
+                <h3>Progresso do treinamento</h3>
+                <div class="study-counts">
+                  <span><strong id="studyDone">0</strong> módulos concluídos</span>
+                  <span><strong id="studyDoing">0</strong> módulos em andamento</span>
+                  <span><strong id="studyTodo">0</strong> módulos restantes</span>
+                </div>
+                <div class="quiz-progress-bar" role="progressbar" aria-label="Progresso do treinamento" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="studyBar">
+                  <div class="progress-fill" id="studyFill" style="width:0%"></div>
+                </div>
+              </div>
+              <div class="search-bar">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <label class="sr-only" for="studySearch">Buscar na cartilha</label>
+                <input type="text" id="studySearch" placeholder="Buscar na cartilha..." onkeyup="filterStudy()">
+              </div>
+              <div class="card study-tip">
+                <h4><i class="fas fa-lightbulb" aria-hidden="true"></i> Dica de estudo</h4>
+                <p>Comece pelo <strong>Módulo 01 (Visão Geral da Infraestrutura)</strong> para entender o caminho da energia, depois avance linearmente. Utilize a navegação <em>Anterior</em> / <em>Próximo</em> no final de cada lição.</p>
+              </div>
+            </main>
+          </div>
+        </div>
+
+        <!-- Progress Page -->
+        <div id="page-progress" class="page">
+          <div class="section-header">
+            <h2>Meu Progresso</h2>
+            <p>Acompanhe sua evolução no treinamento.</p>
+          </div>
+          <div class="progress-detail" id="progressDetail">
+            <!-- Progress details will be loaded dynamically -->
+          </div>
+        </div>
+
+        <!-- Quiz Page -->
+        <div id="page-quiz" class="page">
+          <div class="quiz-container" id="quizContainer">
+            <div class="quiz-intro">
+              <div class="section-header">
+                <h2>Simulado Final</h2>
+                <p>30 questões essenciais sobre arquitetura, rotina, medições, carga, redundância, baterias, descarga, HIOKI e segurança.</p>
+              </div>
+              <div class="quiz-info">
+                <div class="info-item">
+                  <i class="fas fa-question-circle"></i>
+                  <span>30 Questões</span>
+                </div>
+                <div class="info-item">
+                  <i class="fas fa-clock"></i>
+                  <span>Sem limite de tempo</span>
+                </div>
+                <div class="info-item">
+                  <i class="fas fa-percentage"></i>
+                  <span>Aprovação: 76,7% (23/30)</span>
+                </div>
+                <div class="info-item">
+                  <i class="fas fa-lock"></i>
+                  <span>Resposta trava após confirmar</span>
+                </div>
+                <div class="info-item">
+                  <i class="fas fa-list-check"></i>
+                  <span>Obrigatório responder as 30</span>
+                </div>
+                <div class="info-item">
+                  <i class="fas fa-rotate-right"></i>
+                  <span>3 tentativas (1 + 2 chances)</span>
+                </div>
+              </div>
+              <button class="btn btn-primary btn-large" onclick="startQuiz()">
+                Iniciar Simulado
+              </button>
+            </div>
+          </div>
+          <div class="card attempts-card">
+            <h3>Minhas tentativas</h3>
+            <p class="attempts-hint">Seu histórico mostra somente o resultado final.</p>
+            <div id="myAttempts"></div>
+          </div>
+          <div class="card study-cta">
+            <h3>Você concluiu seus estudos?</h3>
+            <p>Teste seus conhecimentos no Simulado Final — ou volte à cartilha para revisar.</p>
+            <button class="btn btn-secondary" onclick="navigateTo('study')">
+              <i class="fas fa-book-open" aria-hidden="true"></i> Voltar a Estudar Cartilha
+            </button>
+          </div>
+        </div>
+
+        <!-- Module Detail Page (cartilha) -->
+        <div id="page-module" class="page" aria-label="Módulo da cartilha">
+          <div class="breadcrumbs-line">
+            <a href="#dashboard" onclick="navigateTo('dashboard');return false;">Início</a>
+            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            <a href="#study" onclick="navigateTo('study');return false;">Estudar Cartilha</a>
+            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            <span id="moduleCrumb">Módulo</span>
+          </div>
+          <div class="card cartilha-head">
+            <span class="status-badge in-progress" id="moduleKicker">MÓDULO</span>
+            <h2 id="moduleTitle">Módulo</h2>
+            <div class="objective-box">
+              <strong><i class="fas fa-bullseye" aria-hidden="true"></i> OBJETIVO DO MÓDULO</strong>
+              <p id="moduleDesc"></p>
+            </div>
+            <p><span class="status-badge in-progress">Conteúdo PENDENTE DE VALIDAÇÃO TÉCNICA</span></p>
+          </div>
+          <div id="moduleLessons" class="lessons-list"></div>
+          <div class="modnav">
+            <button class="btn btn-secondary" id="modPrevBtn" onclick="goSiblingModule(-1)">
+              <i class="fas fa-arrow-left" aria-hidden="true"></i> Anterior
+            </button>
+            <button class="btn btn-secondary" onclick="navigateTo('study')">Índice da cartilha</button>
+            <button class="btn btn-primary" id="modNextBtn" onclick="goSiblingModule(1)">
+              Próximo <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Lesson Detail Page (cartilha) -->
+        <div id="page-lesson" class="page" aria-label="Aula da cartilha">
+          <div class="breadcrumbs-line">
+            <a href="#dashboard" onclick="navigateTo('dashboard');return false;">Início</a>
+            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            <a href="#study" onclick="navigateTo('study');return false;">Estudar Cartilha</a>
+            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            <a href="#modules" id="lessonModLink" onclick="navigateTo('modules');return false;">Módulo</a>
+            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            <span id="lessonCrumb">Aula</span>
+          </div>
+          <div class="card lesson-card">
+            <span class="status-badge in-progress" id="lessonKicker">CARTILHA</span>
+            <span class="status-badge in-progress" id="lessonBadge">Aula</span>
+            <h2 id="lessonTitle">Aula</h2>
+            <div class="objective-box">
+              <strong><i class="fas fa-bullseye" aria-hidden="true"></i> OBJETIVO</strong>
+              <p><span id="lessonObjective"></span></p>
+            </div>
+            <div id="lessonContent" class="lesson-content"></div>
+            <figure id="lessonFig" class="fig-card" hidden>
+              <img src="/static/fluxograma.jpg" alt="Fluxograma elétrico do Data Center">
+              <figcaption>Fluxograma do Data Center · <span class="status-badge completed">DOCUMENTAÇÃO TÉCNICA</span></figcaption>
+            </figure>
+            <div class="warnbox">
+              <strong>⚠ Ponto de atenção:</strong> conteúdo PENDENTE DE VALIDAÇÃO TÉCNICA. Este treinamento não substitui NR-10, procedimentos corporativos, autorização formal, documentação técnica ou instruções do fabricante.
+            </div>
+            <h3 class="cp-title">Checkpoints</h3>
+            <div id="lessonCheckpoints"></div>
+            <button class="btn btn-primary" id="completeLessonBtn" onclick="completeLesson()">
+              <i class="fas fa-check" aria-hidden="true"></i> Marcar aula como concluída
+            </button>
+            <div class="modnav">
+              <button class="btn btn-secondary" id="lesPrevBtn" onclick="goSiblingLesson(-1)">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i> Anterior
+              </button>
+              <button class="btn btn-secondary" id="lesBackBtn" onclick="navigateTo('study')">Índice da cartilha</button>
+              <button class="btn btn-primary" id="lesNextBtn" onclick="goSiblingLesson(1)">
+                Próximo <i class="fas fa-arrow-right" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin Page -->
+        <div id="page-admin" class="page" aria-label="Área administrativa">
+          <div class="section-header">
+            <h2>Área Administrativa</h2>
+            <p>Resultados detalhados dos profissionais. Visível somente para administradores.</p>
+          </div>
+          <div class="progress-cards" id="adminKpis"></div>
+          <div class="card" style="margin-top:20px">
+            <div class="section-header">
+              <h2>CERTIFICAÇÕES</h2>
+              <p>Fluxo: teoria → prática APTO → pronto → emissão exclusiva do ADMIN. Aprovação teórica não gera certificado.</p>
+            </div>
+            <div class="admin-filters">
+              <label class="sr-only" for="pipeName">Filtrar por profissional</label>
+              <input type="text" id="pipeName" placeholder="Profissional...">
+              <label class="sr-only" for="pipeStatus">Filtrar por status</label>
+              <select id="pipeStatus" aria-label="Filtrar por status">
+                <option value="">Todos os status</option>
+                <option value="PRACTICAL_EVALUATION_PENDING">Aguard. prática</option>
+                <option value="PRACTICAL_NOT_APPROVED">Prática não apto</option>
+                <option value="READY_FOR_ADMIN_CERTIFICATION">Pronto p/ emissão</option>
+                <option value="CERTIFICATE_ISSUED">Emitidos</option>
+                <option value="CERTIFICATE_REVOKED">Revogados</option>
+              </select>
+              <button class="btn btn-primary" onclick="queryPipeline()">Consultar</button>
+            </div>
+            <div class="table-wrap" id="pipeTableWrap"><p class="muted-text">Use os filtros e clique em Consultar.</p></div>
+            <div id="pipeDetail"></div>
+          </div>
+          <div id="issueModal" class="modal" aria-hidden="true">
+            <div class="modal-content">
+              <div class="modal-header"><h2>CONFIRMAR EMISSÃO DO CERTIFICADO</h2></div>
+              <div id="issueModalBody"></div>
+              <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeIssueModal()">CANCELAR</button>
+                <button class="btn btn-primary" onclick="confirmIssue()">EMITIR CERTIFICADO</button>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="admin-filters">
+              <label class="sr-only" for="admUser">Filtrar por profissional</label>
+              <input type="text" id="admUser" placeholder="Filtrar por profissional...">
+              <label class="sr-only" for="admResult">Filtrar por resultado</label>
+              <select id="admResult" aria-label="Filtrar por resultado">
+                <option value="">Todos os resultados</option>
+                <option value="APROVADO">Aprovados</option>
+                <option value="NAO_APROVADO">Não aprovados</option>
+              </select>
+              <button class="btn btn-primary" onclick="queryAttempts()">Consultar</button>
+            </div>
+            <div class="table-wrap" id="adminTableWrap">
+              <p class="muted-text">Use os filtros e clique em Consultar.</p>
+            </div>
+            <div id="adminDetail"></div>
+          </div>
+          <div class="card" style="margin-top:20px">
+            <div class="section-header">
+              <h2>CERTIFICADOS</h2>
+              <p>Emitidos automaticamente pelo backend após 17/17 + checkpoints + 23/30.</p>
+            </div>
+            <div class="admin-filters">
+              <label class="sr-only" for="certName">Filtrar por nome</label>
+              <input type="text" id="certName" placeholder="Nome do profissional...">
+              <label class="sr-only" for="certCode">Filtrar por código</label>
+              <input type="text" id="certCode" placeholder="Código (HUB-2026-...)...">
+              <label class="sr-only" for="certFrom">Data inicial</label>
+              <input type="date" id="certFrom" aria-label="Data inicial">
+              <label class="sr-only" for="certTo">Data final</label>
+              <input type="date" id="certTo" aria-label="Data final">
+              <label class="sr-only" for="certStatus">Filtrar por status</label>
+              <select id="certStatus" aria-label="Filtrar por status">
+                <option value="">Todos os status</option>
+                <option value="VALID">Válidos</option>
+                <option value="REVOKED">Revogados</option>
+              </select>
+              <button class="btn btn-primary" onclick="queryCertificates()">Consultar</button>
+            </div>
+            <div class="table-wrap" id="certTableWrap">
+              <p class="muted-text">Use os filtros e clique em Consultar.</p>
+            </div>
+            <div id="certDetail"></div>
+          </div>
+          <div class="card" style="margin-top:20px">
+            <div class="section-header">
+              <h2>CONFIGURAÇÕES DO CERTIFICADO</h2>
+              <p>Carga horária e assinaturas (sem padrão inventado — preencha para constar nos certificados).</p>
+            </div>
+            <div class="admin-filters" style="flex-direction:column;align-items:stretch">
+              <label>Carga horária <input type="text" id="cfgWorkload" placeholder="Ex.: 20 horas"></label>
+              <label>Modalidade <input type="text" id="cfgModality" placeholder="Treinamento profissional interno"></label>
+              <label>Responsável pelo treinamento — nome <input type="text" id="cfgS1n"></label>
+              <label>Responsável pelo treinamento — cargo <input type="text" id="cfgS1r"></label>
+              <label>Responsável técnico/administrativo — nome <input type="text" id="cfgS2n"></label>
+              <label>Responsável técnico/administrativo — cargo <input type="text" id="cfgS2r"></label>
+              <button class="btn btn-primary" onclick="saveCertSettings()">Salvar configurações</button>
+              <h3 style="margin-top:16px">Carga horária por módulo (histórico acadêmico)</h3>
+              <p class="muted-text">Ex.: "2 horas". O total é somado automaticamente quando todos os módulos têm valor numérico.</p>
+              <div id="moduleHoursWrap"><p class="muted-text">Carregando…</p></div>
+              <button class="btn btn-primary" onclick="saveModuleWorkload()">Salvar horas dos módulos</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Certificate Page -->
+        <div id="page-certificate" class="page">
+          <div class="certificate-container">
+            <div class="section-header">
+              <h2>Certificado de Conclusão</h2>
+            </div>
+            <div class="certificate-placeholder" id="certificatePlaceholder">
+              <i class="fas fa-certificate"></i>
+              <p>Complete o simulado final para obter seu certificado.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Practical Evaluation Page (avaliador + admin) -->
+        <div id="page-practical" class="page" aria-label="Avaliação Prática">
+          <div class="section-header">
+            <h2>Avaliação Prática Presencial</h2>
+            <p>Após a conclusão da formação e aprovação na avaliação teórica, o profissional deverá passar por uma avaliação prática presencial realizada por um técnico responsável designado.</p>
+            <p class="muted-text">A avaliação prática verifica, dentro do escopo deste treinamento, a compreensão e a capacidade demonstrada pelo profissional. Ela não substitui NR-10, treinamentos obrigatórios, autorizações profissionais, procedimentos corporativos, requisitos legais/normativos, documentação técnica ou supervisão operacional.</p>
+          </div>
+          <div class="card">
+            <h3>Profissionais aguardando avaliação</h3>
+            <div class="table-wrap" id="practicalPendingWrap"><p class="muted-text">Carregando…</p></div>
+          </div>
+          <div class="card">
+            <h3>Todos os profissionais</h3>
+            <p class="muted-text">Avalie ou reavalie diretamente, mesmo quem ainda não concluiu a teoria (o registro exige aprovação teórica prévia).</p>
+            <div class="table-wrap" id="practicalAllWrap"><p class="muted-text">Carregando…</p></div>
+          </div>
+          <div class="card" id="practicalFormCard" hidden>
+            <h3>Avaliação — <span id="practicalUserName"></span></h3>
+            <div class="admin-filters" style="flex-direction:column;align-items:stretch">
+              <label>Data da avaliação <input type="date" id="pevDate"></label>
+              <label>Seu cargo / função <input type="text" id="pevTitle" placeholder="Ex.: Técnico de campo"></label>
+              <div role="radiogroup" aria-label="Resultado">
+                <label><input type="radio" name="pevResult" value="APTO"> APTO</label>
+                <label><input type="radio" name="pevResult" value="NAO_APTO"> NÃO APTO</label>
+              </div>
+              <div id="pevCriteria"></div>
+              <label>Observações <textarea id="pevObs" rows="3" placeholder="Registre observações relevantes sobre o desempenho apresentado durante a avaliação prática."></textarea></label>
+              <div class="cert-actions">
+                <button class="btn btn-secondary" onclick="closePracticalForm()">Cancelar</button>
+                <button class="btn btn-primary" onclick="submitPractical()">Registrar avaliação</button>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Avaliações realizadas por mim</h3>
+            <div class="table-wrap" id="practicalMineWrap"><p class="muted-text">Carregando…</p></div>
+          </div>
+        </div>
+
+        <!-- Help Page -->
+        <div id="page-help" class="page">
+          <div class="section-header">
+            <h2>Ajuda</h2>
+            <p>Encontre respostas para suas dúvidas.</p>
+          </div>
+          <div class="help-content">
+            <div class="help-item">
+              <h3><i class="fas fa-book"></i> Como acessar os módulos?</h3>
+              <p>Navegue pela aba "Módulos" e clique no módulo desejado para acessar as aulas.</p>
+            </div>
+            <div class="help-item">
+              <h3><i class="fas fa-clipboard-list"></i> Como fazer o simulado?</h3>
+              <p>Após concluir todos os módulos, acesse a aba "Simulado" e inicie a avaliação final.</p>
+            </div>
+            <div class="help-item">
+              <h3><i class="fas fa-certificate"></i> Como obter o certificado?</h3>
+              <p>Complete o simulado final com aproveitamento mínimo de 76,7% (23/30) para gerar seu certificado.</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Right Sidebar -->
+    <aside class="right-sidebar">
+      <div class="right-sidebar-card card-success">
+        <div class="card-icon-large">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h3>Curso Concluído!</h3>
+        <p>Todos os módulos foram finalizados com sucesso. Agora é o momento de mostrar o que você aprendeu!</p>
+        <div class="progress-breakdown">
+          <div class="breakdown-item">
+            <span>Módulos:</span>
+            <span id="rightModules">0 / 17</span>
+          </div>
+          <div class="breakdown-item">
+            <span>Aulas:</span>
+            <span id="rightLessons">0%</span>
+          </div>
+          <div class="breakdown-item">
+            <span>Checkpoints:</span>
+            <span id="rightCheckpoints">0%</span>
+          </div>
+          <div class="breakdown-item">
+            <span>Progresso Geral:</span>
+            <span id="rightGeneral">0%</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="right-sidebar-card">
+        <h3>Resumo do Curso</h3>
+        <div class="summary-item">
+          <span>Módulos:</span>
+          <span>17</span>
+        </div>
+        <div class="summary-item">
+          <span>Aulas:</span>
+          <span id="summaryLessons">0%</span>
+        </div>
+        <div class="summary-item">
+          <span>Checkpoints:</span>
+          <span id="summaryCheckpoints">0%</span>
+        </div>
+        <div class="summary-item">
+          <span>Status:</span>
+          <span class="status-badge" id="summaryStatus">Em andamento</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script src="/static/dashboard.js"></script>
+  <div id="adminPrintWrap" aria-hidden="true"></div>
+</body>
+</html>

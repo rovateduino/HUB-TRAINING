@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HUB Training | Painel ADM</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    .tabs { display:flex; flex-wrap:wrap; gap:6px; max-width:1280px; margin:0 auto; padding:0 24px; border-bottom:1px solid var(--line); }
+    .table-wrap { max-width:1280px !important; margin:0 auto !important; padding:0 24px 70px !important; overflow-x:auto !important; }
+    /* Tabelas ADM: compactas para caber todas as colunas sem cortar */
+    #usersTable, #invitesTable, #attemptsTable, #dashAttemptsTable { font-size:13px; min-width:100%; }
+    #usersTable th, #usersTable td,
+    #invitesTable th, #invitesTable td,
+    #attemptsTable th, #attemptsTable td,
+    #dashAttemptsTable th, #dashAttemptsTable td {
+      padding:10px 8px; vertical-align:middle; white-space:nowrap;
+    }
+    /* Email pode quebrar para economizar largura (col 1 = checkbox) */
+    #usersTable td:nth-child(4),
+    #attemptsTable td:nth-child(4),
+    #dashAttemptsTable td:nth-child(3) {
+      white-space:normal; word-break:break-all; min-width:170px; max-width:260px;
+    }
+    /* Nome sem quebrar, data compacta */
+    #usersTable td:nth-child(3) { white-space:nowrap; max-width:170px; overflow:hidden; text-overflow:ellipsis; }
+    #usersTable td:nth-child(8) { font-size:12px; white-space:nowrap; }
+    /* Coluna de ações sempre visível e compacta */
+    #usersTable th:last-child, #usersTable td:last-child,
+    #invitesTable th:last-child, #invitesTable td:last-child { white-space:nowrap; }
+    #usersTable .row-actions, #invitesTable .row-actions { flex-wrap:nowrap; gap:6px; }
+    .table-wrap::-webkit-scrollbar { height:8px; }
+    .table-wrap::-webkit-scrollbar-thumb { background:#29425d; border-radius:99px; }
+    .tab {
+      padding:10px 16px; border:1px solid transparent; border-radius:12px 12px 0 0;
+      cursor:pointer; font-weight:800; font-size:14px; color:var(--muted);
+      background:transparent; margin-bottom:-1px;
+    }
+    .tab.active { color:var(--text); border-color:var(--line); border-bottom-color:var(--panel); background:var(--panel); }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+    .form-inline { display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap; padding:18px 0 6px; }
+    .form-inline .form-group { display:grid; gap:5px; }
+    .form-inline label { font-size:12px; color:var(--muted); }
+    .form-inline input, .form-inline select {
+      background:#081525; border:1px solid #29425d; color:var(--text);
+      border-radius:10px; padding:9px 11px; font-family:inherit; font-size:13px;
+      min-width: 140px;
+    }
+    .form-inline button { margin-bottom:0; }
+    .admin-head { display:flex; justify-content:space-between; align-items:flex-end; gap:18px; flex-wrap:wrap; max-width:1280px; padding-left:24px; padding-right:24px; }
+    .admin-head h1 { margin-bottom:0; }
+    .pill { display:inline-block; padding:3px 8px; border-radius:999px; font-size:11px; font-weight:800; letter-spacing:.03em; }
+    .pill.ok { background:#123a35; color:#79f0d5; }
+    .pill.no { background:#40212a; color:#ffadb8; }
+    .pill.muted { background:#2a3c54; color:#bcd0ea; }
+    .pill.warn { background:#4a3a15; color:#ffcf70; }
+    .pill.accent { background:#0e352c; color:#8df1d5; }
+    .row-actions { display:flex; gap:6px; flex-wrap:wrap; }
+    .btn { padding:9px 13px; border-radius:10px; font-size:13px; }
+    .btn.sm { padding:6px 10px; font-size:12px; }
+    .btn:disabled { opacity:.55; cursor:not-allowed; }
+    .row-split { display:grid; grid-template-columns: 1.2fr 1fr; gap:18px; align-items:start; padding:0 24px; max-width:1280px; margin:0 auto 26px; }
+    @media(max-width:900px){ .row-split{ grid-template-columns:1fr; } }
+    .panel { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:20px; }
+    .panel h3 { margin:0 0 14px; font-size:18px; }
+    .muted { color: var(--muted); }
+    .mono { font-family: ui-monospace, Consolas, Menlo, monospace; font-size: 12.5px; letter-spacing:.2px; word-break:break-all; }
+    .modal-mask { position:fixed; inset:0; background:rgba(2,6,14,.72); display:none; z-index:30; align-items:flex-start; justify-content:center; padding:4vh 5vw; overflow-y:auto; }
+    .modal-mask.open { display:flex; }
+    .modal { width:min(680px, 100%); max-height:92vh; display:flex; flex-direction:column; background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:22px; box-shadow:0 30px 80px rgba(0,0,0,.5); margin:auto 0; }
+    #am_body, #tm_meta { overflow-y:auto; max-height:calc(92vh - 170px); padding-right:6px; overscroll-behavior:contain; }
+    #am_body::-webkit-scrollbar { width:8px; } #am_body::-webkit-scrollbar-thumb { background:#29425d; border-radius:99px; }
+    body.modal-open { overflow:hidden; }
+    .modal h3 { margin:0 0 10px; }
+    .modal .row-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .modal form { display:grid; gap:14px; margin-top:8px; }
+    .modal input, .modal select {
+      display:block; width:100%; background:#081525; border:1px solid #29425d; color:var(--text);
+      border-radius:10px; padding:11px 13px; font-family:inherit; font-size:14px;
+    }
+    .modal label { font-size:13px; color:#d5e1ef; display:block; margin-bottom:6px; }
+    @media(max-width:560px){ .modal .row-2{grid-template-columns:1fr;} }
+    .chips { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+    .big-code {
+      display:block; padding:14px 16px; border-radius:12px;
+      background:#04111c; border:1px dashed #377466; color:#8df1d5;
+      font-family: ui-monospace, Consolas, Menlo, monospace; font-size:14px; letter-spacing:.3px;
+      overflow-x:auto; word-break:break-all; outline:none;
+    }
+    .spaced { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+    .stats-4 { max-width:1280px; margin:0 auto; padding:0 24px 24px; display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+    @media(max-width:900px){ .stats-4{grid-template-columns:repeat(2,1fr);} }
+    .stats-4 div { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px; }
+    .stats-4 b { display:block; font-size:26px; color:var(--accent); }
+    .stats-4 span { color:var(--muted); font-size:12px; }
+    .empty { padding:30px 20px; text-align:center; color:var(--muted); font-size:14px; }
+    .search-row { display:grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap:8px; align-items:end; padding:14px 0 4px; }
+    .toolbar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:12px 0 4px; }
+    .toolbar .spacer { flex:1; }
+    .toolbar .count { font-size:12px; color:var(--muted); }
+    .btn.danger { background:#40212a; color:#ffadb8; border:1px solid #6b2c37; }
+    .btn.danger:hover { background:#552a35; }
+    table input[type="checkbox"] { width:16px; height:16px; accent-color:var(--accent); cursor:pointer; }
+    @media(max-width:900px){ .search-row { grid-template-columns: 1fr 1fr; } }
+    .search-row label { display:block; font-size:12px; color:var(--muted); margin-bottom:4px; }
+    .search-row input, .search-row select {
+      background:#081525; border:1px solid #29425d; color:var(--text);
+      border-radius:10px; padding:9px 11px; font-family:inherit; font-size:13px; width:100%;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">🛡</span>
+      <div>
+        <strong>HUB Training • Painel ADM</strong>
+        <small id="adminUserBar">Carregando...</small>
+      </div>
+    </div>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/dashboard">Dashboard do Prof.</a>
+      <button id="logoutBtn" class="btn ghost sm" type="button">Sair</button>
+    </nav>
+  </header>
+
+  <section class="admin-head">
+    <div>
+      <span class="eyebrow">PAINEL ADMINISTRATIVO</span>
+      <h1>Gestão do treinamento</h1>
+      <p>Acompanhe resultados, profissionais, tokens de convite e recuperação de senha.</p>
+    </div>
+  </section>
+
+  <nav class="tabs" role="tablist" aria-label="Seções ADM">
+    <button role="tab" class="tab active" data-tab="dashboard" aria-selected="true">📊 Dashboard</button>
+    <button role="tab" class="tab" data-tab="attempts" aria-selected="false">📋 Avaliações</button>
+    <button role="tab" class="tab" data-tab="users" aria-selected="false">👥 Usuários</button>
+    <button role="tab" class="tab" data-tab="invites" aria-selected="false">🔑 Tokens de Convite</button>
+  </nav>
+
+  <!-- TAB: DASHBOARD -->
+  <section id="tab-dashboard" role="tabpanel" class="tab-panel active">
+    <div class="stats-4" id="dashStats" style="padding-top:26px;"></div>
+    <div class="table-wrap">
+      <h3 style="padding: 6px 0 10px;">Últimas avaliações</h3>
+      <table id="dashAttemptsTable">
+        <thead><tr><th>Data</th><th>Profissional</th><th>Email</th><th>Acertos</th><th>%</th><th>Resultado</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- TAB: ATTEMPTS -->
+  <section id="tab-attempts" role="tabpanel" class="tab-panel">
+    <div class="table-wrap" style="padding-top:20px;">
+      <div class="search-row">
+        <div>
+          <label for="f_user">Profissional (nome/email)</label>
+          <input id="f_user" type="text" placeholder="Buscar por nome ou email">
+        </div>
+        <div>
+          <label for="f_result">Resultado</label>
+          <select id="f_result">
+            <option value="">Todos</option>
+            <option value="APROVADO">Aprovados</option>
+            <option value="REPROVADO">Reprovados</option>
+          </select>
+        </div>
+        <div>
+          <label for="f_from">A partir de</label>
+          <input id="f_from" type="date">
+        </div>
+        <div>
+          <label for="f_to">Até</label>
+          <input id="f_to" type="date">
+        </div>
+        <div><button id="btn_filters" class="btn primary sm" type="button">Buscar</button></div>
+      </div>
+      <div class="toolbar">
+        <button id="btn_del_attempts_sel" class="btn danger sm" type="button">🗑 Excluir selecionados</button>
+        <button id="btn_del_attempts_all" class="btn danger sm" type="button" title="Exclui TODOS os registros do filtro atual (SQLite + Firebase)">🗑 Excluir todos</button>
+        <span class="spacer"></span>
+        <span class="count" id="attemptsCount"></span>
+      </div>
+      <table id="attemptsTable">
+        <thead><tr><th><input type="checkbox" id="chk_attempts_all" title="Selecionar todos"></th><th>Data</th><th>Profissional</th><th>Email</th><th>Acertos</th><th>%</th><th>Resultado</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- TAB: USERS -->
+  <section id="tab-users" role="tabpanel" class="tab-panel">
+    <div class="table-wrap" style="padding-top:20px;">
+      <h3 style="padding: 6px 0 10px;">Profissionais cadastrados</h3>
+      <div class="toolbar">
+        <button id="btn_del_users_sel" class="btn danger sm" type="button">🗑 Excluir selecionados</button>
+        <button id="btn_del_users_all" class="btn danger sm" type="button" title="Exclui todos os profissionais (exceto ADMINs e você)">🗑 Excluir todos</button>
+        <span class="spacer"></span>
+        <span class="count" id="usersCount"></span>
+      </div>
+      <table id="usersTable">
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="chk_users_all" title="Selecionar todos"></th>
+            <th>ID</th><th>Nome</th><th>Email</th><th>Ident.</th><th>Role</th><th>Ativo</th><th>Criado em</th><th>Ações</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- TAB: INVITES -->
+  <section id="tab-invites" role="tabpanel" class="tab-panel">
+    <div class="table-wrap" style="padding-top:20px;">
+      <div class="row-split" style="padding:0 0 24px; margin:0; max-width:none;">
+        <div class="panel">
+          <h3>🔑 Gerar novo Token de Convite</h3>
+          <p class="muted" style="margin:0 0 14px;">Entregue esse token ao profissional para habilitar o cadastro.</p>
+          <form id="newInviteForm">
+            <div class="modal row-2" style="display:block; border:0; padding:0; background:transparent; box-shadow:none; width:auto;">
+              <div>
+                <label for="inv_email">Restringir a email (opcional)</label>
+                <input id="inv_email" type="email" placeholder="profissional@empresa.com.br">
+              </div>
+              <div>
+                <label for="inv_uses">Usos máximos</label>
+                <input id="inv_uses" type="number" min="1" max="1000" step="1" value="1">
+              </div>
+              <div>
+                <label for="inv_ttl">Validade (horas)</label>
+                <input id="inv_ttl" type="number" min="1" max="8760" step="1" value="168">
+              </div>
+              <div style="display:flex; align-items:flex-end;">
+                <button type="submit" class="btn primary" style="width:100%;">Gerar Token</button>
+              </div>
+            </div>
+          </form>
+          <div id="newInviteResult" style="display:none; margin-top:16px;"></div>
+        </div>
+
+        <div class="panel">
+          <h3>🗂 Listar Tokens</h3>
+          <p class="muted" style="margin:0 0 12px;">Filtre por status: ativos, usados, revogados ou expirados.</p>
+          <div class="form-inline" style="padding:0;">
+            <div class="form-group">
+              <label for="f_status">Status</label>
+              <select id="f_status">
+                <option value="all">Todos</option>
+                <option value="active" selected>Ativos</option>
+                <option value="used">Usados</option>
+                <option value="revoked">Revogados</option>
+                <option value="expired">Expirados</option>
+              </select>
+            </div>
+            <button id="btn_list_invites" class="btn primary sm" type="button">Atualizar lista</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <button id="btn_del_invites_sel" class="btn danger sm" type="button">🗑 Excluir selecionados</button>
+        <button id="btn_del_invites_all" class="btn danger sm" type="button" title="Exclui todos os tokens do status atual">🗑 Excluir todos</button>
+        <span class="spacer"></span>
+        <span class="count" id="invitesCount"></span>
+      </div>
+      <table id="invitesTable">
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="chk_invites_all" title="Selecionar todos"></th>
+            <th>ID</th><th>Token</th><th>Status</th><th>Usos</th><th>Restrição de email</th>
+            <th>Criado por</th><th>Usado por</th><th>Criação</th><th>Expira em</th><th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- MODAL: Detalhe de Tentativa -->
+  <div id="attemptModal" class="modal-mask" role="dialog" aria-modal="true" aria-labelledby="am_title">
+    <div class="modal">
+      <div class="spaced" style="margin-top:0;">
+        <h3 id="am_title">Detalhe da avaliação</h3>
+        <button type="button" id="am_close" class="btn ghost sm">Fechar</button>
+      </div>
+      <div id="am_body" class="muted" style="padding:4px 0 0;">Carregando...</div>
+    </div>
+  </div>
+
+  <!-- MODAL: Token gerado (convite ou reset manual) -->
+  <div id="tokenModal" class="modal-mask" role="dialog" aria-modal="true" aria-labelledby="tm_title">
+    <div class="modal">
+      <div class="spaced" style="margin-top:0;">
+        <h3 id="tm_title">Token gerado</h3>
+        <button type="button" id="tm_close" class="btn ghost sm">Fechar</button>
+      </div>
+      <div id="tm_meta" class="muted" style="padding:6px 0 10px;"></div>
+      <code id="tm_code" class="big-code" tabindex="0"></code>
+      <div class="spaced">
+        <button id="tm_copy" type="button" class="btn primary">📋 Copiar</button>
+        <span id="tm_status" class="muted"></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="errorBox" class="error" role="alert" aria-live="polite"
+       style="display:none; max-width:1280px; margin:10px auto 16px; padding:14px 24px;"></div>
+
+  <footer>
+    <small>© HUB Training • Painel ADM • Todo acesso é auditado.</small>
+  </footer>
+
+  <script>
+  (function () {
+    const API_BASE = '/api';
+    const errorBox = document.getElementById('errorBox');
+    const TOKEN_KEY = 'hub_token';
+
+    // ---------- Helpers ----------
+    function toastErr(m){ errorBox.textContent=m; errorBox.style.display='block'; errorBox.scrollIntoView({behavior:'smooth', block:'start'}); }
+    function clearErr(){ errorBox.style.display='none'; }
+    function fmtDT(iso){ if(!iso) return '—'; try { return new Date(iso).toLocaleString('pt-BR'); } catch { return iso; } }
+    function fmtDTshort(iso){ if(!iso) return '—'; try { return new Date(iso).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}); } catch { return iso; } }
+    function pct(a,b){ if (!b) return '0%'; return Math.round( (a/b)*100 ) + '%'; }
+
+    async function api(path, opts = {}) {
+      clearErr();
+      const token = localStorage.getItem(TOKEN_KEY);
+      const res = await fetch(API_BASE + path, {
+        credentials: 'same-origin',
+        ...opts,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': 'Bearer ' + token } : {}),
+          ...(opts.headers || {})
+        }
+      });
+      const data = await res.json().catch(()=>({}));
+      if (res.status === 401) {
+        location.href = '/admin/login';
+        throw new Error(data.error || 'Não autorizado.');
+      }
+      if (!res.ok) throw new Error(data.error || ('Erro HTTP ' + res.status));
+      return data;
+    }
+
+    // ---------- Identidade ----------
+    (async () => {
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (!token) {
+        location.href = '/admin/login';
+        return;
+      }
+      try {
+        const r = await api('/auth/me');
+        if (!r.user || r.user.role !== 'ADMIN') {
+          try { localStorage.removeItem(TOKEN_KEY); } catch {}
+          location.href = '/admin/login';
+          return;
+        }
+        document.getElementById('adminUserBar').textContent =
+          (r.user.name || r.user.email) + ' • ADM';
+        loadDashboard();
+        loadAttempts({});
+        loadUsers();
+        loadInvites('active');
+      } catch (e) {
+        if (e.message && e.message.includes('Não autorizado')) {
+          try { localStorage.removeItem(TOKEN_KEY); } catch {}
+          location.href = '/admin/login';
+          return;
+        }
+        toastErr(e.message || 'Sessão inválida.');
+      }
+    })();
+
+    // ---------- Logout ----------
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try { await api('/auth/logout', { method:'POST' }); } catch {}
+      try { localStorage.removeItem(TOKEN_KEY); } catch {}
+      location.href = '/';
+    });
+
+    // ---------- Tabs ----------
+    const tabs = document.querySelectorAll('.tab');
+    function activateTab(name){
+      tabs.forEach(t => {
+        const on = t.dataset.tab === name;
+        t.classList.toggle('active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      ['dashboard','attempts','users','invites'].forEach(n=>{
+        document.getElementById('tab-'+n).classList.toggle('active', n===name);
+      });
+    }
+    tabs.forEach(t => t.addEventListener('click', () => activateTab(t.dataset.tab)));
+
+    // ---------- Dashboard ----------
+    async function loadDashboard(){
+      const [d, a] = await Promise.all([
+        api('/admin/dashboard'),
+        api('/admin/attempts?limit=8').catch(()=>({attempts:[]}))
+      ]);
+      const host = document.getElementById('dashStats');
+      host.innerHTML = `
+        <div><b>${d.modules||0}</b><span>Módulos de treinamento</span></div>
+        <div><b>${d.lessons||0}</b><span>Lições (Cartilha)</span></div>
+        <div><b>${d.attempts||0}</b><span>Avaliações feitas</span></div>
+        <div><b>${d.passed||0}</b><span>Aprovações • ${pct(d.passed||0, d.attempts||0)}</span></div>
+      `;
+      renderAttemptsRows(document.querySelector('#dashAttemptsTable tbody'), (a.attempts||[]).slice(0,8), false);
+    }
+
+    // ---------- Attempts ----------
+    function currentAttemptFilters(){
+      return {
+        user: document.getElementById('f_user').value.trim(),
+        result: document.getElementById('f_result').value,
+        from: document.getElementById('f_from').value,
+        to: document.getElementById('f_to').value,
+      };
+    }
+    function renderAttemptsRows(tbody, list, showDetailLink){
+      tbody.innerHTML = '';
+      const chkAll = document.getElementById('chk_attempts_all');
+      if (chkAll) chkAll.checked = false;
+      const counter = document.getElementById('attemptsCount');
+      if (counter && showDetailLink) counter.textContent = list.length ? `${list.length} registro(s)` : '';
+      if (!list.length) {
+        tbody.innerHTML = `<tr><td colspan="${showDetailLink?8:6}" class="empty">Sem registros ainda.</td></tr>`;
+        return;
+      }
+      list.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          ${showDetailLink ? `<td><input type="checkbox" class="chk_attempt" value="${r.id}"></td>` : ''}
+          <td>${fmtDT(r.date || r.completed_at)}</td>
+          <td>${r.user_name || r.candidate || '—'}</td>
+          <td>${r.user_email || '—'}</td>
+          <td>${r.score}/${r.total}</td>
+          <td>${pct(r.score, r.total)}</td>
+          <td><span class="pill ${r.result==='APROVADO'?'ok':'no'}">${r.result}</span></td>
+          ${showDetailLink ? `<td><div class="row-actions" style="flex-wrap:nowrap;">
+            <button class="btn ghost sm am_open" type="button" data-id="${r.id}">Análise</button>
+            <button class="btn danger sm att_del" type="button" data-id="${r.id}" title="Excluir esta avaliação (SQLite + Firebase)">🗑</button>
+          </div></td>` : ''}
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+    async function loadAttempts(q){
+      const p = new URLSearchParams();
+      Object.entries(q).forEach(([k,v])=>{ if(v) p.set(k,v); });
+      const r = await api('/admin/attempts' + (p.toString() ? '?'+p.toString() : ''));
+      renderAttemptsRows(document.querySelector('#attemptsTable tbody'), r.attempts || [], true);
+    }
+    document.getElementById('btn_filters').addEventListener('click', () => { loadAttempts(currentAttemptFilters()); });
+    function selectedAttemptIds(){
+      return [...document.querySelectorAll('.chk_attempt:checked')].map(c => Number(c.value)).filter(n => Number.isInteger(n));
+    }
+    document.getElementById('chk_attempts_all').addEventListener('change', (e) => {
+      document.querySelectorAll('.chk_attempt').forEach(c => { c.checked = e.target.checked; });
+    });
+    document.getElementById('btn_del_attempts_sel').addEventListener('click', async () => {
+      const ids = selectedAttemptIds();
+      if (!ids.length) return toastErr('Selecione ao menos uma avaliação.');
+      if (!confirm(`Excluir ${ids.length} avaliação(ões)? Apaga do SQLite e do Firebase. Não há como desfazer.`)) return;
+      try {
+        const r = await api('/admin/attempts', { method:'DELETE', body: JSON.stringify({ ids }) });
+        loadAttempts(currentAttemptFilters()); loadDashboard();
+        errorBox.style.display='none';
+      } catch (e) { toastErr(e.message); }
+    });
+    document.getElementById('btn_del_attempts_all').addEventListener('click', async () => {
+      if (!confirm('Excluir TODAS as avaliações do filtro atual? Apaga do SQLite e do Firebase. Não há como desfazer.')) return;
+      try {
+        const f = currentAttemptFilters();
+        const p = new URLSearchParams();
+        Object.entries(f).forEach(([k,v])=>{ if(v) p.set(k,v); });
+        const r = await api('/admin/attempts' + (p.toString() ? '?'+p.toString() : ''), { method:'DELETE', body: JSON.stringify({ all:true }) });
+        loadAttempts(f); loadDashboard();
+        errorBox.style.display='none';
+      } catch (e) { toastErr(e.message); }
+    });
+
+    // Attempt detail modal
+    const am = document.getElementById('attemptModal');
+    function closeAttemptModal(){ am.classList.remove('open'); document.body.classList.remove('modal-open'); }
+    function openAttemptModal(){ am.classList.add('open'); document.body.classList.add('modal-open'); am.scrollTop = 0; }
+    document.getElementById('am_close').addEventListener('click', closeAttemptModal);
+    am.addEventListener('click', (e)=>{ if (e.target === am) closeAttemptModal(); });
+    document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') { closeAttemptModal(); tm.classList.remove('open'); document.body.classList.remove('modal-open'); } });
+    document.addEventListener('click', (e) => {
+      const b = e.target.closest('.am_open'); if(!b) return;
+      openAttemptDetail(b.dataset.id);
+    });
+    document.addEventListener('click', async (e) => {
+      const b = e.target.closest('.att_del'); if(!b) return;
+      if (!confirm('Excluir esta avaliação? Apaga do SQLite e do Firebase.')) return;
+      try {
+        await api('/admin/attempts/' + b.dataset.id, { method:'DELETE' });
+        loadAttempts(currentAttemptFilters()); loadDashboard();
+      } catch (err) { toastErr(err.message); }
+    });
+    async function openAttemptDetail(id){
+      openAttemptModal();
+      document.getElementById('am_body').innerHTML = 'Carregando...';
+      try {
+        const data = await api('/admin/attempt/' + id);
+        const a = data.attempt || {};
+        const html = `
+          <div class="detail-list" style="padding:0;">
+            <strong style="font-size:15px;">${a.user} • ${a.email} • ${fmtDT(a.date)}</strong>
+            <div class="chips">
+              <span class="pill ${a.result==='APROVADO'?'ok':'no'}">${a.result}</span>
+              <span class="pill muted">${a.correct}/${a.total} corretas (${pct(a.correct,a.total)})</span>
+              <span class="pill accent">${a.wrong} erradas</span>
+            </div>
+            ${(data.answers||[]).map((a,i)=>`
+              <article class="detail ${a.is_correct?'correct':'wrong'}">
+                <div class="detail-num">${i+1}</div>
+                <div>
+                  <h3>${a.question_text}</h3>
+                  <p><strong>Sua resposta:</strong> ${a.given_text || '<em>(em branco)</em>'}
+                  ${a.is_correct ? '' : `<br><strong>Correta:</strong> ${a.correct_text || '<em>não cadastrada</em>'}`}</p>
+                  <div class="chips"><span class="pill muted">${a.category || '—'}</span></div>
+                </div>
+                <div class="mark">${a.is_correct?'✓':'✗'}</div>
+              </article>
+            `).join('')}
+          </div>
+        `;
+        document.getElementById('am_body').innerHTML = html;
+      } catch (e) { toastErr(e.message); document.getElementById('am_body').textContent = 'Falha ao carregar.'; }
+    }
+
+    // ---------- Users ----------
+    async function loadUsers(){
+      const r = await api('/admin/users');
+      const tbody = document.querySelector('#usersTable tbody');
+      tbody.innerHTML = '';
+      const chkAll = document.getElementById('chk_users_all');
+      if (chkAll) chkAll.checked = false;
+      const counter = document.getElementById('usersCount');
+      if (counter) counter.textContent = (r.users||[]).length ? `${(r.users||[]).length} usuário(s)` : '';
+      (r.users || []).forEach(u => {
+        const isAdmin = u.role === 'ADMIN';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${isAdmin ? '' : `<input type="checkbox" class="chk_user" value="${u.id}">`}</td>
+          <td>${u.id}</td>
+          <td><strong>${u.name || '—'}</strong></td>
+          <td>${u.email || '—'}</td>
+          <td>${u.identifier || '—'}</td>
+          <td><span class="pill ${isAdmin?'warn':'muted'}">${u.role || '—'}</span></td>
+          <td><span class="pill ${u.is_active?'ok':'no'}">${u.is_active?'Ativo':'Inativo'}</span></td>
+          <td title="${fmtDT(u.created_at)}">${fmtDTshort(u.created_at)}</td>
+          <td>
+            <div class="row-actions" style="flex-wrap:nowrap;">
+              <button type="button" class="btn ghost sm user_reset" data-id="${u.id}" data-name="${u.name||''}" data-email="${u.email||''}" title="Reset de senha">
+                🔐 Reset
+              </button>
+              ${isAdmin ? '' : `<button type="button" class="btn danger sm user_del" data-id="${u.id}" data-name="${u.name||u.email||('ID '+u.id)}" title="Excluir usuário + avaliações (SQLite + Firebase)">🗑</button>`}
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+    function selectedUserIds(){
+      return [...document.querySelectorAll('.chk_user:checked')].map(c => Number(c.value)).filter(n => Number.isInteger(n));
+    }
+    document.getElementById('chk_users_all').addEventListener('change', (e) => {
+      document.querySelectorAll('.chk_user').forEach(c => { c.checked = e.target.checked; });
+    });
+    document.getElementById('btn_del_users_sel').addEventListener('click', async () => {
+      const ids = selectedUserIds();
+      if (!ids.length) return toastErr('Selecione ao menos um usuário.');
+      if (!confirm(`Excluir ${ids.length} usuário(s) + todas as avaliações deles? Apaga do SQLite e do Firebase. Não há como desfazer.`)) return;
+      try { await api('/admin/users', { method:'DELETE', body: JSON.stringify({ ids }) }); loadUsers(); loadAttempts({}); loadDashboard(); }
+      catch (e) { toastErr(e.message); }
+    });
+    document.getElementById('btn_del_users_all').addEventListener('click', async () => {
+      if (!confirm('Excluir TODOS os profissionais (exceto ADMINs e você)? Apaga avaliações junto, no SQLite e no Firebase. Não há como desfazer.')) return;
+      try { await api('/admin/users', { method:'DELETE', body: JSON.stringify({ all:true }) }); loadUsers(); loadAttempts({}); loadDashboard(); }
+      catch (e) { toastErr(e.message); }
+    });
+    document.addEventListener('click', async (e) => {
+      const b = e.target.closest('.user_reset'); if(b) { generateUserResetToken(b.dataset.id, b.dataset.name, b.dataset.email); return; }
+      const d = e.target.closest('.user_del'); if(!d) return;
+      if (!confirm(`Excluir "${d.dataset.name}" + avaliações? Apaga do SQLite e do Firebase.`)) return;
+      try { await api('/admin/users/' + d.dataset.id, { method:'DELETE' }); loadUsers(); loadAttempts({}); loadDashboard(); }
+      catch (err) { toastErr(err.message); }
+    });
+
+    // ---------- Invites ----------
+    document.getElementById('newInviteForm').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const body = {
+        email: document.getElementById('inv_email').value.trim().toLowerCase() || undefined,
+        max_uses: Number(document.getElementById('inv_uses').value || 1),
+        ttl_hours: Number(document.getElementById('inv_ttl').value || 168)
+      };
+      try {
+        const r = await api('/admin/invite-tokens', { method:'POST', body: JSON.stringify(body) });
+        const box = document.getElementById('newInviteResult');
+        box.style.display = 'block';
+        box.innerHTML = `
+          <div class="token-card" style="padding:16px; border:1px solid #2e7263; border-radius:14px; background:linear-gradient(180deg, #0f3a33, #092540);">
+            <div class="row"><strong style="color:#aef3dd;">✅ Token criado com sucesso!</strong><small>Expira em: ${fmtDT(r.expires_at)}</small></div>
+            <code class="big-code" id="newInviteCode" tabindex="0">${r.token}</code>
+            <div class="row">
+              <button type="button" id="newInviteCopy" class="btn primary">📋 Copiar</button>
+              <div class="chips">
+                ${r.email_restriction ? `<span class="pill warn">Restrito ao email ${r.email_restriction}</span>` : `<span class="pill muted">Livre (qualquer email)</span>`}
+                <span class="pill accent">${r.max_uses} uso(s)</span>
+              </div>
+            </div>
+          </div>
+        `;
+        box.querySelector('#newInviteCopy').addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(r.token);
+            const b = box.querySelector('#newInviteCopy');
+            const orig = b.textContent; b.textContent = '✅ Copiado!'; setTimeout(()=>b.textContent=orig, 1800);
+          } catch {}
+        });
+        loadInvites(document.getElementById('f_status').value);
+      } catch (e) { toastErr(e.message || 'Falha ao criar token.'); }
+    });
+
+    document.getElementById('btn_list_invites').addEventListener('click', ()=>loadInvites(document.getElementById('f_status').value));
+    document.getElementById('f_status').addEventListener('change', ()=>loadInvites(document.getElementById('f_status').value));
+
+    async function loadInvites(status){
+      const r = await api('/admin/invite-tokens' + (status ? '?status='+encodeURIComponent(status) : ''));
+      const tbody = document.querySelector('#invitesTable tbody');
+      tbody.innerHTML = '';
+      const chkAll = document.getElementById('chk_invites_all');
+      if (chkAll) chkAll.checked = false;
+      const counter = document.getElementById('invitesCount');
+      if (counter) counter.textContent = (r.tokens||[]).length ? `${(r.tokens||[]).length} token(s)` : '';
+      (r.tokens || []).forEach(t => {
+        const pill = t.status === 'active'  ? `<span class="pill ok">ATIVO</span>`
+                 : t.status === 'used'    ? `<span class="pill muted">USADO</span>`
+                 : t.status === 'revoked' ? `<span class="pill no">REVOGADO</span>`
+                 : `<span class="pill warn">EXPIRADO</span>`;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><input type="checkbox" class="chk_invite" value="${t.id}"></td>
+          <td>${t.id}</td>
+          <td><span class="mono" title="${t.token}">${t.token.slice(0,12)}…${t.token.slice(-6)}</span></td>
+          <td>${pill}</td>
+          <td>${t.max_uses - (t.remaining_uses|0)} / ${t.max_uses}</td>
+          <td>${t.email_restriction || '<span class="muted">—</span>'}</td>
+          <td>${t.created_by_name || '<span class="muted">—</span>'}</td>
+          <td>${t.used_by_name ? `${t.used_by_name} <span class="muted">(${t.used_by_email||''})</span>` : '<span class="muted">—</span>'}</td>
+          <td>${fmtDT(t.created_at)}</td>
+          <td>${fmtDT(t.expires_at)}</td>
+          <td>
+            <div class="row-actions" style="flex-wrap:nowrap;">
+              <button type="button" class="btn ghost sm invite_view" data-token="${t.token}" title="Ver token completo">🔍</button>
+              ${t.status==='active' ? `<button type="button" class="btn ghost sm invite_revoke" data-id="${t.id}">Revogar</button>` : ''}
+              <button type="button" class="btn danger sm invite_del" data-id="${t.id}" title="Excluir token permanentemente">🗑</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      if (!(r.tokens||[]).length) {
+        tbody.innerHTML = `<tr><td colspan="11" class="empty">Nenhum token encontrado neste status.</td></tr>`;
+      }
+    }
+    function selectedInviteIds(){
+      return [...document.querySelectorAll('.chk_invite:checked')].map(c => Number(c.value)).filter(n => Number.isInteger(n));
+    }
+    document.getElementById('chk_invites_all').addEventListener('change', (e) => {
+      document.querySelectorAll('.chk_invite').forEach(c => { c.checked = e.target.checked; });
+    });
+    document.getElementById('btn_del_invites_sel').addEventListener('click', async () => {
+      const ids = selectedInviteIds();
+      if (!ids.length) return toastErr('Selecione ao menos um token.');
+      if (!confirm(`Excluir ${ids.length} token(s) de convite? Não há como desfazer.`)) return;
+      try { await api('/admin/invite-tokens', { method:'DELETE', body: JSON.stringify({ ids }) }); loadInvites(document.getElementById('f_status').value); }
+      catch (e) { toastErr(e.message); }
+    });
+    document.getElementById('btn_del_invites_all').addEventListener('click', async () => {
+      const st = document.getElementById('f_status').value;
+      if (!confirm(`Excluir TODOS os tokens do status "${st}"? Não há como desfazer.`)) return;
+      try { await api('/admin/invite-tokens?status=' + encodeURIComponent(st), { method:'DELETE', body: JSON.stringify({ all:true }) }); loadInvites(st); }
+      catch (e) { toastErr(e.message); }
+    });
+
+    document.addEventListener('click', (e)=>{
+      const rb = e.target.closest('.invite_revoke');
+      if (rb) { revokeInvite(rb.dataset.id); return; }
+      const vb = e.target.closest('.invite_view');
+      if (vb) { openTokenModal({ title:'Token de Convite', meta:'Copiável. Entregue ao profissional para uso no cadastro.', token: vb.dataset.token }); return; }
+      const db = e.target.closest('.invite_del');
+      if (db) { deleteInvite(db.dataset.id); return; }
+    });
+    async function deleteInvite(id){
+      if (!confirm('Excluir este token permanentemente?')) return;
+      try { await api('/admin/invite-tokens/' + id, { method:'DELETE' }); loadInvites(document.getElementById('f_status').value); }
+      catch (e) { toastErr(e.message); }
+    }
+    async function revokeInvite(id){
+      if (!confirm('Revogar este token? Não poderá mais ser usado.')) return;
+      try {
+        await api('/admin/invite-tokens/'+id+'/revoke', { method:'PATCH' });
+        loadInvites(document.getElementById('f_status').value);
+      } catch (e) { toastErr(e.message); }
+    }
+
+    // ---------- Reset token manual ----------
+    async function generateUserResetToken(id, name, email){
+      try {
+        const r = await api('/admin/users/'+id+'/reset-token', { method:'POST' });
+        openTokenModal({
+          title: '🔐 Token de Reset de Senha',
+          meta: `Usuário: ${name} • ${email} • Expira em: ${fmtDT(r.expires_at)}`,
+          token: r.token
+        });
+      } catch (e) { toastErr(e.message); }
+    }
+
+    // ---------- Token Modal ----------
+    const tm = document.getElementById('tokenModal');
+    function closeTokenModal(){ tm.classList.remove('open'); document.body.classList.remove('modal-open'); }
+    document.getElementById('tm_close').addEventListener('click', closeTokenModal);
+    tm.addEventListener('click', (e)=>{ if (e.target===tm) closeTokenModal(); });
+    function openTokenModal({ title, meta, token }) {
+      document.getElementById('tm_title').textContent = title;
+      document.getElementById('tm_meta').textContent = meta;
+      document.getElementById('tm_code').textContent = token;
+      document.getElementById('tm_status').textContent = '';
+      tm.classList.add('open'); document.body.classList.add('modal-open'); tm.scrollTop = 0;
+    }
+    document.getElementById('tm_copy').addEventListener('click', async () => {
+      const txt = document.getElementById('tm_code').textContent;
+      try {
+        await navigator.clipboard.writeText(txt);
+        document.getElementById('tm_status').textContent = '✅ Copiado para a área de transferência.';
+      } catch { document.getElementById('tm_status').textContent = '❌ Não foi possível copiar. Selecione e copie manualmente.'; }
+    });
+
+  })();
+  </script>
+</body>
+</html>

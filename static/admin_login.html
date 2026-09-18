@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HUB Training | ADM Login</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    .hero-min { max-width: 520px; margin: 0 auto; padding: 70px 5vw 14px; text-align: center; }
+    .hero-min h1 { font-size: 38px; margin: 10px 0 10px; letter-spacing: -.03em; }
+    .hero-min p { color: var(--muted); margin: 0; }
+    .auth-shell { max-width: 480px; margin: 20px auto 40px; padding: 32px; }
+    .auth-shell form { display: grid; gap: 16px; }
+    .form-group { display: grid; gap: 6px; }
+    .form-group label { font-size: 14px; color: #d5e1ef; }
+    .form-help { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    input[type=email], input[type=password], input[type=text] {
+      display:block; width:100%; margin-top:0; background:#081525; border:1px solid #29425d; color:var(--text);
+      border-radius:10px; padding:12px 14px; font-size:15px; font-family:inherit;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    input:focus { outline:none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(68,215,182,.15); }
+    .btn.full { width:100%; padding:13px; font-size:15px; }
+    .auth-actions { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-top:4px; }
+    .auth-actions a { font-size:13px; }
+    .warn-card {
+      background: #2a1d17; border:1px solid #5b3a27; color:#ffd4ad;
+      border-radius:12px; padding:12px 14px; font-size:13px;
+    }
+    .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+    .logo-wrap { display:inline-flex; align-items:center; gap:10px; margin-bottom:6px; }
+    .logo-mark { display:grid; place-items:center; width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,#ff8a65,#ff5577); color:#18040a; font-size:20px; }
+    .topbar-auth { justify-content: center; padding: 16px 5vw 4px; border-bottom:0; background:transparent; backdrop-filter:none; position:static; }
+    .topbar-auth nav a { font-size:13px; color:#9db0c8; }
+    .eyebrow-adm { letter-spacing:.14em; font-weight:800; font-size:11px; color:#ff9c7c; }
+  </style>
+</head>
+<body>
+  <header class="topbar topbar-auth">
+    <nav aria-label="Navegação rápida"><a href="/">← Voltar para a Home</a></nav>
+  </header>
+
+  <main class="hero-min">
+    <div class="logo-wrap" aria-hidden="true">
+      <span class="logo-mark">🛡</span>
+      <div style="text-align:left;">
+        <span class="eyebrow-adm">ÁREA RESTRITA</span>
+        <strong style="display:block; font-size:18px;">HUB Training | ADM</strong>
+        <small style="color:var(--muted); font-size:11px;">Acesso exclusivo do administrador</small>
+      </div>
+    </div>
+    <h1>Entrar como ADM</h1>
+    <p>Use suas credenciais de administrador para acessar o painel.</p>
+  </main>
+
+  <section class="login auth-shell" aria-labelledby="adm-login-title">
+    <h2 id="adm-login-title" class="sr-only">Formulário de login ADM</h2>
+
+    <div class="warn-card">
+      ⚠️ Este painel contém dados sensíveis (respostas corretas, pontuações, tokens de convite).
+      Não compartilhe suas credenciais. Toda ação é auditada.
+    </div>
+
+    <div id="errorBox" class="error" role="alert" aria-live="polite" style="display:none; margin-top:14px;"></div>
+
+    <form id="admLoginForm" novalidate>
+      <div class="form-group">
+        <label for="email">E-mail ADM</label>
+        <input id="email" name="email" type="email" required autocomplete="username" aria-required="true"
+               placeholder="seu@email.com">
+      </div>
+      <div class="form-group">
+        <label for="password">Senha ADM</label>
+        <input id="password" name="password" type="password" minlength="6" required autocomplete="current-password"
+               aria-required="true">
+      </div>
+      <button type="submit" class="btn primary full">Entrar no painel</button>
+      <div class="auth-actions">
+        <a href="/reset">Esqueci a senha</a>
+        <a href="/login">Acesso do profissional →</a>
+      </div>
+    </form>
+  </section>
+
+  <footer><small>© HUB Training • Manutenção Elétrica • Painel Administrativo</small></footer>
+
+  <script>
+  (function () {
+    const form = document.getElementById('admLoginForm');
+    const errBox = document.getElementById('errorBox');
+    function showError(m){ errBox.textContent=m; errBox.style.display='block'; }
+
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      errBox.style.display='none';
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const password = document.getElementById('password').value;
+      if (!email || !password) return showError('Preencha e-mail e senha.');
+      const btn = form.querySelector('button[type=submit]');
+      btn.disabled=true; btn.textContent='Entrando...';
+      try {
+        const res = await fetch('/api/auth/login', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({email, password})
+        });
+        const data = await res.json().catch(()=>({}));
+        if (!res.ok) {
+          if (res.status===429) return showError('Muitas tentativas. Aguarde.');
+          return showError(data.error || 'Credenciais inválidas.');
+        }
+        if (data.user && data.user.role !== 'ADMIN') {
+          return showError('Credenciais sem permissão ADMIN. Use o login do profissional.');
+        }
+        if (!data.token) return showError('Resposta inválida do servidor.');
+        try { localStorage.setItem('hub_token', data.token); } catch {}
+        try { localStorage.setItem('hub_user', JSON.stringify(data.user || {})); } catch {}
+        location.href = '/admin';
+      } catch(e){ showError('Falha de conexão com o servidor.'); }
+      finally { btn.disabled=false; btn.textContent='Entrar no painel'; }
+    });
+  })();
+  </script>
+</body>
+</html>
