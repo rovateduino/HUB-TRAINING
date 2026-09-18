@@ -6,6 +6,7 @@
       "src": "server/index.cjs",
       "use": "@vercel/node",
       "config": {
+        "maxDuration": 60,
         "includeFiles": [
           "static/**",
           "home.html",
@@ -16,11 +17,6 @@
       }
     }
   ],
-  "functions": {
-    "server/index.cjs": {
-      "maxDuration": 60
-    }
-  },
   "routes": [
     { "src": "/static/(.*)", "dest": "/static/$1" },
     { "src": "/",                    "dest": "/server/index.cjs" },
