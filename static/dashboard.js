@@ -293,9 +293,8 @@ async function loadDashboardData() {
     // Indicadores reais calculados pelo backend (valores por usuário logado)
     const summary = await apiCall('/api/dashboard/summary');
     if (summary && summary.modules) {
-      // Home preview: somente os 4 primeiros módulos como acesso rápido
-      const homePreview = summary.modules.slice(0, 4);
-      renderModules(homePreview, 'modulesGrid');
+      // Acesso rápido: todos os módulos da cartilha (inclui mini-cursos NR-10 e AC)
+      renderModules(summary.modules, 'modulesGrid');
       updateProgressCards(summary);
       updateHero(summary);
     }
