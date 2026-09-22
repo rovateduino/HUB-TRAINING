@@ -1,3 +1,0 @@
-{% extends 'base.html' %}{% block title %}Resultado | Avaliação{% endblock %}{% block content %}
-<section class="result {% if passed %}pass{% else %}fail{% endif %}"><div class="result-icon">{% if passed %}✓{% else %}×{% endif %}</div><span class="eyebrow">RESULTADO FINAL</span><h1>{% if passed %}APROVADO{% else %}NÃO APROVADO{% endif %}</h1><p>{% if passed %}O profissional atingiu o aproveitamento mínimo definido para esta avaliação.{% else %}O profissional não atingiu o aproveitamento mínimo definido para esta avaliação.{% endif %}</p><div class="result-rule">Critério: mínimo de 23 acertos em 30 (75%+).</div><a class="btn ghost" href="{{ url_for('home') }}">Voltar ao treinamento</a></section>
-{% endblock %}

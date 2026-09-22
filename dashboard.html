@@ -175,7 +175,7 @@
               <div class="card-content">
                 <span class="card-label">Progresso Geral</span>
                 <span class="card-value" id="generalValue">0%</span>
-                <span class="card-status">Finalizado</span>
+                <span class="card-status" id="generalStatus">A iniciar</span>
               </div>
             </div>
           </div>
@@ -619,16 +619,16 @@
 
     <!-- Right Sidebar -->
     <aside class="right-sidebar">
-      <div class="right-sidebar-card card-success">
-        <div class="card-icon-large">
-          <i class="fas fa-check-circle"></i>
+      <div class="right-sidebar-card" id="statusCard" data-default-class="right-sidebar-card">
+        <div class="card-icon-large" id="statusCardIconWrap">
+          <i class="fas fa-play-circle" id="statusCardIcon"></i>
         </div>
-        <h3>Curso Concluído!</h3>
-        <p>Todos os módulos foram finalizados com sucesso. Agora é o momento de mostrar o que você aprendeu!</p>
+        <h3 id="statusCardTitle">Curso Não Iniciado</h3>
+        <p id="statusCardText">Comece pelo módulo 1 e siga a ordem da cartilha para liberar o simulado final.</p>
         <div class="progress-breakdown">
           <div class="breakdown-item">
             <span>Módulos:</span>
-            <span id="rightModules">0 / 17</span>
+            <span id="rightModules">0 / 33</span>
           </div>
           <div class="breakdown-item">
             <span>Aulas:</span>
@@ -636,7 +636,7 @@
           </div>
           <div class="breakdown-item">
             <span>Checkpoints:</span>
-            <span id="rightCheckpoints">0%</span>
+            <span id="rightCheckpoints">0 / 44</span>
           </div>
           <div class="breakdown-item">
             <span>Progresso Geral:</span>
@@ -649,7 +649,7 @@
         <h3>Resumo do Curso</h3>
         <div class="summary-item">
           <span>Módulos:</span>
-          <span>17</span>
+          <span id="summaryModulesCount">33</span>
         </div>
         <div class="summary-item">
           <span>Aulas:</span>
@@ -657,11 +657,11 @@
         </div>
         <div class="summary-item">
           <span>Checkpoints:</span>
-          <span id="summaryCheckpoints">0%</span>
+          <span id="summaryCheckpoints">0 / 44</span>
         </div>
         <div class="summary-item">
           <span>Status:</span>
-          <span class="status-badge" id="summaryStatus">Em andamento</span>
+          <span class="status-badge status-badge-not-started" id="summaryStatus">Não iniciado</span>
         </div>
       </div>
     </aside>

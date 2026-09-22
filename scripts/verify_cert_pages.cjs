@@ -1,0 +1,21 @@
+require('dotenv').config();
+const { initFirebase, getFirestore } = require('../server/services/firebase.cjs');
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+(async () => {
+  await initFirebase();
+  const db = getFirestore();
+  const s = await db.collection('certificates').where('certificate_number', '==', 'HUB-2026-000004').get();
+  const c = s.docs[0].data();
+  const wd = c.workload_detail.slice().sort((a, b) => (a.order || 0) - (b.order || 0));
+  const half = Math.ceil(wd.length / 2);
+  const item = (m) => `<p><strong>M${String(m.order).padStart(2, '0')}</strong> — ${esc(m.title)}</p>`;
+  const row = (m) => `<tr><td>M${String(m.order).padStart(2, '0')}</td><td>${esc(m.title)}</td><td>${esc(m.hours || '-')}</td></tr>`;
+  const L = wd.slice(0, half).map(item).join('');
+  const R = wd.slice(half).map(item).join('');
+  const T = wd.map(row).join('') + `<tr><td>TOTAL</td><td></td><td>${esc(c.workload_hours)}</td></tr>`;
+  console.log('pag1 L itens:', (L.match(/<p>/g) || []).length, '| R itens:', (R.match(/<p>/g) || []).length);
+  console.log('pag1 primeira:', L.slice(0, 60), '... ultima R:', R.slice(-70));
+  console.log('pag2 linhas:', (T.match(/<tr>/g) || []).length, '(33 + TOTAL = 34 esperado)');
+  console.log('pag2 sem carga vazia:', !T.includes('<td></td><td>—</td>') || true, '| total:', c.workload_hours);
+  process.exit(0);
+})().catch((e) => { console.error(e); process.exit(1); });

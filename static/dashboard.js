@@ -304,16 +304,21 @@ async function loadDashboardData() {
 }
 
 function updateHero(summary) {
-  const elig = summary.indicators && summary.indicators.eligible_for_quiz;
+  const overall = getOverallStatus(summary);
   const title = document.getElementById('heroTitle');
   const sub = document.getElementById('heroSub');
   const done = document.getElementById('bannerComplete');
-  if (elig) {
+  if (overall === 'COMPLETED') {
     if (title) title.textContent = 'Treinamento Completo!';
     if (sub) sub.textContent = 'Você concluiu todos os módulos do curso. Agora realize o simulado final para obter seu certificado de conclusão.';
     if (done) done.hidden = false;
+  } else if (overall === 'IN_PROGRESS') {
+    if (title) title.textContent = 'Treinamento de Manutenção Elétrica';
+    if (sub) sub.textContent = 'Siga os módulos na ordem sugerida. Ao completar todas as aulas e checkpoints, o simulado final será liberado.';
+    if (done) done.hidden = true;
   } else {
     if (title) title.textContent = 'Treinamento de Manutenção Elétrica';
+    if (sub) sub.textContent = 'Este é o seu ponto de partida. Comece pelo Módulo 1 e siga a sequência da cartilha para avançar no treinamento.';
     if (done) done.hidden = true;
   }
 }
@@ -325,7 +330,7 @@ function renderModules(modules, gridId) {
   grid.innerHTML = modules.map((module) => {
     const st = modStatus(module);
     return `
-    <div class="module-card" onclick="navigateToModule(${module.id})" role="button" tabindex="0" onkeydown="if(event.key==='Enter')navigateToModule(${module.id})" aria-label="Módulo ${module.number}: ${escHtml(module.title)} — ${module.progress}% concluído">
+    <div class="module-card" onclick="navigateToModule('${module.id}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')navigateToModule('${module.id}')" aria-label="Módulo ${module.number}: ${escHtml(module.title)} — ${module.progress}% concluído">
       <div class="module-number">${module.number}</div>
       <div class="module-info">
         <div class="module-title">${escHtml(module.title)}</div>
@@ -339,6 +344,66 @@ function renderModules(modules, gridId) {
       </div>
     </div>`;
   }).join('');
+}
+
+function getOverallStatus(summary) {
+  const ind = summary && summary.indicators ? summary.indicators : {};
+  const modules = summary && summary.modules ? summary.modules : [];
+  const totalMods = modules.length;
+  const doneMods = modules.filter(m => m.status === 'COMPLETED').length;
+  const startedCount = Number(ind.started || 0);
+  const completedLessons = Number(ind.completed_lessons || 0);
+  const eligible = !!ind.eligible_for_quiz;
+
+  if (eligible && totalMods > 0 && doneMods === totalMods) return 'COMPLETED';
+  if (startedCount > 0 || doneMods > 0 || completedLessons > 0) return 'IN_PROGRESS';
+  return 'NOT_STARTED';
+}
+
+function applyOverallStatusToUI(summary) {
+  const status = getOverallStatus(summary);
+  const card = document.getElementById('statusCard');
+  const titleEl = document.getElementById('statusCardTitle');
+  const textEl = document.getElementById('statusCardText');
+  const iconWrapEl = document.getElementById('statusCardIconWrap');
+  const iconEl = document.getElementById('statusCardIcon');
+  const summaryModulesCountEl = document.getElementById('summaryModulesCount');
+
+  const modules = summary.modules || [];
+  if (summaryModulesCountEl) summaryModulesCountEl.textContent = String(modules.length || 0);
+
+  if (card) {
+    const base = card.getAttribute('data-default-class') || 'right-sidebar-card';
+    card.className = `${base} status-card-${status}`;
+    if (status === 'COMPLETED') card.classList.add('card-success');
+    if (status === 'IN_PROGRESS') card.classList.add('card-in-progress');
+    if (status === 'NOT_STARTED') card.classList.add('card-not-started');
+  }
+
+  if (iconWrapEl) {
+    iconWrapEl.classList.remove('green', 'blue', 'gray');
+    if (status === 'COMPLETED') iconWrapEl.classList.add('green');
+    if (status === 'IN_PROGRESS') iconWrapEl.classList.add('blue');
+    if (status === 'NOT_STARTED') iconWrapEl.classList.add('gray');
+  }
+  if (iconEl) {
+    iconEl.classList.remove('fa-check-circle', 'fa-clock', 'fa-play-circle', 'fa-circle');
+    if (status === 'COMPLETED') iconEl.classList.add('fa-check-circle');
+    if (status === 'IN_PROGRESS') iconEl.classList.add('fa-clock');
+    if (status === 'NOT_STARTED') iconEl.classList.add('fa-play-circle');
+  }
+
+  if (titleEl) {
+    if (status === 'COMPLETED') titleEl.textContent = 'Curso Concluído!';
+    else if (status === 'IN_PROGRESS') titleEl.textContent = 'Treinamento em Andamento';
+    else titleEl.textContent = 'Curso Não Iniciado';
+  }
+
+  if (textEl) {
+    if (status === 'COMPLETED') textEl.textContent = 'Todos os módulos foram finalizados com sucesso. Agora é o momento de mostrar o que você aprendeu no simulado final.';
+    else if (status === 'IN_PROGRESS') textEl.textContent = 'Continue seguindo a ordem dos módulos. Ao finalizar todos, o simulado final será liberado automaticamente.';
+    else textEl.textContent = 'Comece pelo módulo 1 e siga a ordem da cartilha para liberar o simulado final.';
+  }
 }
 
 function setCard(id, value) {
@@ -368,16 +433,30 @@ function updateProgressCards(summary) {
   
   setCard('summaryLessons', `${pctL}%`);
   setCard('summaryCheckpoints', cpLabel);
+
+  applyOverallStatusToUI(summary);
   
   const statusBadge = document.getElementById('summaryStatus');
   if (statusBadge) {
-    if (ind.eligible_for_quiz) {
+    const overall = getOverallStatus(summary);
+    if (overall === 'COMPLETED') {
       statusBadge.textContent = 'Concluído';
       statusBadge.className = 'status-badge completed';
-    } else {
+    } else if (overall === 'IN_PROGRESS') {
       statusBadge.textContent = 'Em andamento';
       statusBadge.className = 'status-badge in-progress';
+    } else {
+      statusBadge.textContent = 'Não iniciado';
+      statusBadge.className = 'status-badge not-started';
     }
+  }
+
+  const generalStatusEl = document.getElementById('generalStatus');
+  if (generalStatusEl) {
+    const overall = getOverallStatus(summary);
+    if (overall === 'COMPLETED') generalStatusEl.textContent = 'Finalizado';
+    else if (overall === 'IN_PROGRESS') generalStatusEl.textContent = 'Em andamento';
+    else generalStatusEl.textContent = 'A iniciar';
   }
 }
 
@@ -430,7 +509,7 @@ function renderStudyIndex(filter) {
   box.innerHTML = list.map(m => {
     const st = modStatus(m);
     return `
-    <button class="study-row${m.status === 'COMPLETED' ? ' done' : ''}" onclick="navigateToModule(${m.id})" aria-label="Módulo ${m.number}: ${escHtml(m.title)} — ${st.text}, ${m.progress}%">
+    <button class="study-row${m.status === 'COMPLETED' ? ' done' : ''}" onclick="navigateToModule('${m.id}')" aria-label="Módulo ${m.number}: ${escHtml(m.title)} — ${st.text}, ${m.progress}%">
       <span class="study-num" aria-hidden="true">${m.number}</span>
       <span class="study-info">
         <span class="study-title">${escHtml(m.title)}</span><br>
@@ -455,8 +534,8 @@ async function ensureStudyModules() {
 async function goSiblingModule(dir) {
   if (currentModuleId == null) return;
   const mods = await ensureStudyModules();
-  const ids = mods.map(m => m.id);
-  const ix = ids.indexOf(Number(currentModuleId));
+  const ids = mods.map(m => String(m.id));
+  const ix = ids.indexOf(String(currentModuleId));
   const nx = ids[ix + dir];
   if (nx) { navigateToModule(nx); return; }
   // Nos extremos: Próximo no último módulo -> simulado; Anterior no primeiro -> índice
@@ -468,15 +547,15 @@ async function goSiblingLesson(dir) {
   if (currentLessonId == null || currentModuleId == null) return;
   try {
     const data = await apiCall(`/api/training/module/${currentModuleId}`);
-    const ids = ((data && data.lessons) || []).map(l => l.id);
-    const ix = ids.indexOf(Number(currentLessonId));
+    const ids = ((data && data.lessons) || []).map(l => String(l.id));
+    const ix = ids.indexOf(String(currentLessonId));
     const nx = ids[ix + dir];
     if (nx) { navigateToLesson(nx); return; }
     // Fim/início do módulo: atravessa para o módulo vizinho (cada módulo tem 1 aula,
     // então sem isso o Próximo/Anterior da aula nunca funciona).
     const mods = await ensureStudyModules();
-    const mids = mods.map(m => m.id);
-    const mix = mids.indexOf(Number(currentModuleId));
+    const mids = mods.map(m => String(m.id));
+    const mix = mids.indexOf(String(currentModuleId));
     const nm = mids[mix + dir];
     if (nm == null) {
       // Fim da cartilha -> simulado; início -> índice
@@ -525,7 +604,7 @@ async function navigateToModule(moduleId) {
     updateBreadcrumb(['Início', 'Estudar Cartilha', moduleLabel]);
     document.getElementById('moduleLessons').innerHTML = lessons.length
       ? lessons.map((l, i) => `
-        <button class="lesson-row" onclick="navigateToLesson(${l.id})" aria-label="Aula ${i + 1}: ${escHtml(l.title)}">
+        <button class="lesson-row" onclick="navigateToLesson('${l.id}')" aria-label="Aula ${i + 1}: ${escHtml(l.title)}">
           <span class="lesson-num">${i + 1}</span>
           <span class="lesson-info">
             <span class="lesson-title">${escHtml(l.title)}</span><br>
@@ -1132,7 +1211,7 @@ function renderCertificate(container, c) {
         </div>
         <div class="cert-slogan">CONHECIMENTO TÉCNICO<br>PARA UM FUTURO<br>MAIS SEGURO</div>
       </div>
-      <div class="cert-title-row"><div class="cert-medal">🎓</div><h2>CERTIFICADO DE CONCLUSÃO</h2></div>
+      <div class="cert-title-row"><img class="cert-medal" src="/static/logo-engemon.png" alt="ENGEMON"><h2>CERTIFICADO DE CONCLUSÃO</h2></div>
       <div class="cert-main">
         <div class="cert-left">
           <div class="cert-certify">Certificamos que</div>
@@ -1157,16 +1236,20 @@ function renderCertificate(container, c) {
       </div>
       <div class="cert-bottom3">
         <div class="cert-panel syllabus"><div class="cert-panel-tab">CONTEÚDO PROGRAMÁTICO</div><div class="cols"><div id="certSyllL"></div><div id="certSyllR"></div></div></div>
+        <div class="cert-right-col">
         <div class="cert-panel qr">
-          <h4>VERIFICAÇÃO DE AUTENTICIDADE</h4>
-          <p>Escaneie o QR Code para verificar este certificado.</p>
+          <div class="qr-text">
+            <h4>VERIFICAÇÃO DE AUTENTICIDADE</h4>
+            <p>Escaneie o QR Code para verificar este certificado.</p>
+            <div class="code">Código: ${escHtml(c.certificate_number)}</div>
+            <p>Documento verificável eletronicamente.</p>
+          </div>
           <img alt="QR Code de validação" src="${escHtml(c.qr_data_url || '')}">
-          <div class="code">Código: ${escHtml(c.certificate_number)}</div>
-          <p>Documento verificável eletronicamente.</p>
         </div>
         <div class="cert-sigs">
           <div class="cert-sig"><div class="sign">${escHtml(c.signer1_name || '')}</div><div class="line">RESPONSÁVEL PELO TREINAMENTO</div><div class="who">${escHtml(c.signer1_name || 'Nome do responsável')}<br>${escHtml(c.signer1_role || 'Cargo / Função')}</div></div>
           <div class="cert-sig"><div class="sign">${escHtml(c.signer2_name || '')}</div><div class="line">RESPONSÁVEL TÉCNICO / ADMINISTRATIVO</div><div class="who">${escHtml(c.signer2_name || 'Nome do responsável')}<br>${escHtml(c.signer2_role || 'Cargo / Função')}</div></div>
+        </div>
         </div>
       </div>
       <div class="cert-foot">
@@ -1181,32 +1264,33 @@ function renderCertificate(container, c) {
       <div class="cert-hist-info">
         <div><div class="k">Participante</div><div class="v">${escHtml(c.participant)}</div></div>
         <div><div class="k">Treinamento</div><div class="v">Manutenção Elétrica — HUBs, Sites e Data Centers</div></div>
-        <div><div class="k">Modalidade</div><div class="v">${escHtml(c.modality || '—')}</div></div>
-        <div><div class="k">Data de conclusão</div><div class="v">${escHtml(fmtDateBR(c.completion_date))}</div></div>
-        <div><div class="k">Resultado</div><div class="v">TREINAMENTO CONCLUÍDO (Teórica ${escHtml(String(th.score))}/${escHtml(String(th.total))} · Prática ${escHtml(prLabel)})</div></div>
         <div><div class="k">Código do certificado</div><div class="v mono">${escHtml(c.certificate_number)}</div></div>
       </div>
       <table class="cert-hist-table"><thead><tr><th class="num">MÓDULO</th><th>TEMA</th><th class="num">CARGA HORÁRIA</th></tr></thead>
       <tbody id="certHistBody"></tbody></table>
     </div>`;
-  // Conteúdo programático (pág. 1) + histórico (pág. 2) a partir do snapshot do certificado
+  // Página 1: lista simples MXX — Título (como o modelo). Página 2: tabela completa com carga horária.
+  // Preenchimento escopado ao container renderizado: evita preencher a cópia errada quando há
+  // mais de um certificado no DOM (ex.: impressão via adminPrintWrap).
   const wd = Array.isArray(c.workload_detail) ? c.workload_detail.slice().sort((a, b) => (a.order || 0) - (b.order || 0)) : [];
-  const half = Math.ceil(wd.length / 2);
-  const col = (arr) => arr.map(m => `<p><strong>M${String(m.order).padStart(2, '0')}</strong> — ${escHtml(m.title)}</p>`).join('') || '<p>—</p>';
-  const set = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+  const set = (id, html) => { const el = container.querySelector('#' + id); if (el) el.innerHTML = html; };
+  const item = (m) => `<p><strong>M${String(m.order).padStart(2, '0')}</strong> — ${escHtml(m.title)}</p>`;
+  const row = (m) => `<tr><td class="num">M${String(m.order).padStart(2, '0')}</td><td>${escHtml(m.title)}</td><td class="num">${escHtml(m.hours || '—')}</td></tr>`;
+  const totalRow = `<tr class="total"><td class="num">TOTAL</td><td></td><td class="num">${escHtml(c.workload_hours || '—')}</td></tr>`;
   if (wd.length) {
-    set('certSyllL', col(wd.slice(0, half)));
-    set('certSyllR', col(wd.slice(half)));
-    set('certHistBody', wd.map(m => `<tr><td class="num">M${String(m.order).padStart(2, '0')}</td><td>${escHtml(m.title)}</td><td class="num">${escHtml(m.hours || '—')}</td></tr>`).join('')
-      + `<tr class="total"><td class="num">TOTAL</td><td></td><td class="num">${escHtml(c.workload_hours || '—')}</td></tr>`);
+    const half = Math.ceil(wd.length / 2);
+    set('certSyllL', wd.slice(0, half).map(item).join('') || '<p>—</p>');
+    set('certSyllR', wd.slice(half).map(item).join('') || '<p>—</p>');
+    set('certHistBody', wd.map(row).join('') + totalRow);
   } else {
     // Fallback: títulos ao vivo (antes da emissão com snapshot)
     apiCall('/api/training/modules').then(d => {
       const mods = ((d && d.modules) || []).slice().sort((a, b) => (a.order_num || 0) - (b.order_num || 0));
-      const h = Math.ceil(mods.length / 2);
-      const cc = (arr) => arr.map(m => `<p><strong>M${String(m.order_num).padStart(2, '0')}</strong> — ${escHtml(m.title)}</p>`).join('');
-      set('certSyllL', cc(mods.slice(0, h))); set('certSyllR', cc(mods.slice(h)));
-      set('certHistBody', mods.map(m => `<tr><td class="num">M${String(m.order_num).padStart(2, '0')}</td><td>${escHtml(m.title)}</td><td class="num">—</td></tr>`).join(''));
+      const mapped = mods.map(m => ({ order: m.order_num, title: m.title }));
+      const h = Math.ceil(mapped.length / 2);
+      set('certSyllL', mapped.slice(0, h).map(item).join(''));
+      set('certSyllR', mapped.slice(h).map(item).join(''));
+      set('certHistBody', mapped.map((m) => row({ ...m, hours: '—' })).join(''));
     }).catch(() => {});
   }
 }
@@ -1286,7 +1370,7 @@ async function queryAttempts() {
           <td>${escHtml(a.user_name)}<br><span class="muted-text">${escHtml(a.user_email || '')}</span></td>
           <td>${escHtml(a.date || '—')}</td><td>${a.score}/${a.total}</td><td>${a.correct}</td><td>${a.wrong}</td>
           <td><span class="${a.result === 'APROVADO' ? 'badge-ok' : 'badge-warn'}">${a.result}</span></td>
-          <td><button class="btn btn-secondary" onclick="viewAttempt(${a.id})">Ver análise</button></td>
+          <td><button class="btn btn-secondary" onclick="viewAttempt('${a.id}')">Ver análise</button></td>
         </tr>`).join('') + `</tbody></table>`
       : '<p class="muted-text">Nenhuma tentativa encontrada.</p>';
   } catch (error) {
@@ -1345,8 +1429,8 @@ async function queryPipeline() {
           <td>${r.practical ? (r.practical.result === 'APTO' ? `<span class="badge-ok">APTO</span><br><span class="muted-text">${escHtml(r.practical.evaluator_name || '')}</span>` : '<span class="badge-warn">NÃO APTO</span>') : '<span class="badge-warn">PENDENTE</span>'}</td>
           <td><span class="${r.status === 'CERTIFICATE_ISSUED' ? 'badge-ok' : r.status === 'READY_FOR_ADMIN_CERTIFICATION' ? 'badge-ok' : 'badge-warn'}">${escHtml(PIPE_STATUS_LABEL[r.status] || r.status)}</span></td>
           <td>${escHtml(r.date ? fmtDateBR(r.date) : '—')}</td>
-          <td style="white-space:nowrap"><button class="btn btn-secondary" onclick="manageUser(${r.user_id})">Gerenciar</button>
-          ${r.status === 'READY_FOR_ADMIN_CERTIFICATION' ? ` <button class="btn btn-primary" onclick='openIssueModal(${r.user_id}, ${JSON.stringify(r.user_name)})'>EMITIR CERTIFICADO</button>` : ''}</td>
+          <td style="white-space:nowrap"><button class="btn btn-secondary" onclick="manageUser('${r.user_id}')">Gerenciar</button>
+          ${r.status === 'READY_FOR_ADMIN_CERTIFICATION' ? ` <button class="btn btn-primary" onclick='openIssueModal(&#39;${r.user_id}&#39;, ${JSON.stringify(r.user_name).replace(/'/g, "&#39;")})'>EMITIR CERTIFICADO</button>` : ''}</td>
         </tr>`).join('') + `</tbody></table>`
       : '<p class="muted-text">Nenhum profissional encontrado.</p>';
   } catch (e) {
@@ -1427,7 +1511,7 @@ async function manageUser(userId) {
       </div>
       <h3 style="margin:16px 0 8px">Emissão</h3>
       <div class="cert-actions">
-        <button class="btn btn-primary" onclick="queryPipeline().then(() => openIssueModalRefresh(${userId}))">Emitir (se pronto)</button>
+        <button class="btn btn-primary" onclick="queryPipeline().then(() => openIssueModalRefresh('${userId}'))">Emitir (se pronto)</button>
         <button class="btn btn-secondary" onclick="openForceModal()">Liberar excepcional</button>
         <button class="btn btn-secondary" onclick="resetManagedAttempts()">Zerar tentativas do simulado</button>
       </div>
@@ -1579,10 +1663,10 @@ async function queryCertificates() {
           <td>${escHtml(c.result)} (${c.score}/${c.total})</td>
           <td><span class="${c.status === 'VALID' ? 'badge-ok' : 'badge-warn'}">${c.status === 'VALID' ? 'VÁLIDO' : 'REVOGADO'}</span></td>
           <td style="white-space:nowrap">
-            <button class="btn btn-secondary" onclick="viewCertificate(${c.id})">Visualizar</button>
-            <button class="btn btn-secondary" onclick="adminPrintCertificate(${c.id})">PDF</button>
+            <button class="btn btn-secondary" onclick="viewCertificate('${c.id}')">Visualizar</button>
+            <button class="btn btn-secondary" onclick="adminPrintCertificate('${c.id}')">PDF</button>
             <button class="btn btn-secondary" onclick="window.open('/validar/${escHtml(c.certificate_number)}', '_blank')">Verificar</button>
-            ${c.status === 'VALID' ? `<button class="btn btn-secondary" onclick="revokeCertificate(${c.id})">Revogar</button>` : ''}
+            ${c.status === 'VALID' ? `<button class="btn btn-secondary" onclick="revokeCertificate('${c.id}')">Revogar</button>` : ''}
           </td>
         </tr>`).join('') + `</tbody></table>`
       : '<p class="muted-text">Nenhum certificado encontrado.</p>';
@@ -1685,7 +1769,7 @@ async function loadPractical() {
           <td>${p.lessons.done}/${p.lessons.total}</td>
           <td>${p.theory.score}/30 APROVADO</td>
           <td>${p.practical === 'NAO_APTO' ? '<span class="badge-warn">NÃO APTO (reavaliar)</span>' : '<span class="badge-warn">PENDENTE</span>'}</td>
-          <td><button class="btn btn-secondary" onclick="openPracticalForm(${p.user_id}, '${escHtml(p.user_name).replace(/'/g, "\\'")}')">Avaliar</button></td>
+          <td><button class="btn btn-secondary" onclick="openPracticalForm('${p.user_id}', '${escHtml(p.user_name).replace(/'/g, "\\'")}')">Avaliar</button></td>
         </tr>`).join('') + `</tbody></table>`
       : '<p class="muted-text">Nenhum profissional aguardando avaliação (ninguém com teoria aprovada e sem APTO no momento).</p>';
   } catch (e) {
@@ -1703,7 +1787,7 @@ async function loadPractical() {
             <td>${p.lessons.done}/${p.lessons.total}</td>
             <td>${p.theory ? `${p.theory.score}/30 APROVADO` : '<span class="badge-warn">PENDENTE</span>'}</td>
             <td>${p.practical ? (p.practical.result === 'APTO' ? '<span class="badge-ok">APTO</span>' : '<span class="badge-warn">NÃO APTO</span>') : '<span class="badge-warn">—</span>'}</td>
-            <td><button class="btn btn-secondary" onclick="openPracticalForm(${p.user_id}, '${escHtml(p.user_name).replace(/'/g, "\\'")}')">${p.practical ? 'Reavaliar' : 'Avaliar'}</button></td>
+            <td><button class="btn btn-secondary" onclick="openPracticalForm('${p.user_id}', '${escHtml(p.user_name).replace(/'/g, "\\'")}')">${p.practical ? 'Reavaliar' : 'Avaliar'}</button></td>
           </tr>`).join('') + `</tbody></table>`
         : '<p class="muted-text">Nenhum profissional cadastrado.</p>';
     }

@@ -21,18 +21,46 @@ function _sortQuestions(rows) {
   });
 }
 
+function _bankOf(q) {
+  const c = String((q && q.category) || '');
+  if (/^NR-10/.test(c)) return 'nr10';
+  if (/^AC(\s|-|$)/.test(c)) return 'ac';
+  return 'base';
+}
+
+// Simulado final: cobertura estratificada determinística entre os 3 bancos
+// (base + NR-10 + AC), preservando a ordem interna de cada banco.
+function _stratifyBanks(rows, perBank) {
+  const banks = { base: [], nr10: [], ac: [] };
+  for (const r of rows) banks[_bankOf(r)].push(r);
+  const out = [];
+  for (const k of ['base', 'nr10', 'ac']) out.push(...banks[k].slice(0, perBank));
+  // Defesa: se algum banco tiver menos que perBank, completa com o restante do pool em ordem.
+  if (out.length < perBank * 3) {
+    const inOut = new Set(out.map((r) => String(r.id)));
+    for (const r of rows) {
+      if (out.length >= perBank * 3) break;
+      if (!inOut.has(String(r.id))) out.push(r);
+    }
+  }
+  return out;
+}
+
 async function listQuestions(count = 30, shuffleSeed = null) {
   let rows;
   try {
-    let q = collection(COL_QUESTIONS).where('is_active', '==', true).orderBy('order_num', 'asc').orderBy('id', 'asc');
-    if (Number(count) > 0) q = q.limit(Math.min(Number(count), 500));
-    rows = await parseDocs(q);
+    const q = collection(COL_QUESTIONS).where('is_active', '==', true).orderBy('order_num', 'asc').orderBy('id', 'asc');
+    rows = await parseDocs(q.limit(500));
   } catch {
     // Fallback sem índice composto: filtro simples + ordenação client-side
     const all = await parseDocs(collection(COL_QUESTIONS).where('is_active', '==', true));
     const mine = all.filter((r) => r.is_active === true || r.is_active === 1);
     rows = _sortQuestions(mine);
-    if (Number(count) > 0) rows = rows.slice(0, Math.min(Number(count), 500));
+  }
+  if (Number(count) === 30) {
+    rows = _stratifyBanks(rows, 10);
+  } else if (Number(count) > 0) {
+    rows = rows.slice(0, Math.min(Number(count), 500));
   }
   if (shuffleSeed != null) {
     let seed = Number(shuffleSeed) || Array.from(String(shuffleSeed)).reduce((a, c) => a + c.charCodeAt(0), 0);

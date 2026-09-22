@@ -601,10 +601,32 @@ body {
   border: none;
 }
 
+.card-in-progress {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  border: none;
+}
+
+.card-not-started {
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+  border: none;
+}
+
 .card-icon-large {
   font-size: 48px;
   color: var(--success-green);
   margin-bottom: 16px;
+}
+
+.card-icon-large.green {
+  color: var(--success-green);
+}
+
+.card-icon-large.blue {
+  color: var(--primary-blue);
+}
+
+.card-icon-large.gray {
+  color: #6b7280;
 }
 
 .right-sidebar-card h3 {
@@ -657,6 +679,12 @@ body {
 .status-badge.in-progress {
   background-color: #dbeafe;
   color: var(--primary-blue);
+}
+
+.status-badge-not-started,
+.status-badge.not-started {
+  background-color: #f3f4f6;
+  color: #6b7280;
 }
 
 /* Quiz Container */
@@ -882,6 +910,25 @@ body {
   max-width: 400px;
   width: 90%;
   box-shadow: var(--card-shadow-hover);
+}
+
+/* Modal de emissão (Área ADM): responsivo e auto-ajustável */
+#issueModal .modal-content {
+  width: min(560px, 94vw);
+  max-width: 560px;
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: clamp(16px, 3vw, 32px);
+}
+
+#issueModal .cert-progress-row {
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+
+#issueModal .cert-progress-row strong {
+  text-align: right;
+  overflow-wrap: anywhere;
 }
 
 .modal-header {
@@ -1935,9 +1982,9 @@ body.is-evaluator .eval-only {
   position: relative;
   display: flex;
   flex-direction: column;
-  font-size: clamp(8px, 1.1vw, 14px);
+  font-size: clamp(7px, 1vw, 12px);
   color: #1f2a3a;
-  padding: 2.6% 3.4% 1.6%;
+  padding: 1.6% 2.2% 1%;
 }
 /* filetes diagonais */
 .cert-sheet::before {
@@ -1961,125 +2008,138 @@ body.is-evaluator .eval-only {
   pointer-events: none;
 }
 .cert-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 2%; }
-.cert-brand { display: flex; align-items: center; gap: .8em; }
-.cert-brand .bolt { color: #0f2a4a; font-size: 2.6em; line-height: 1; }
-.cert-brand h1 { margin: 0; font-size: 1.9em; letter-spacing: .04em; color: #0f2a4a; }
-.cert-brand .sub { font-size: .85em; color: #33415c; }
-.cert-areas { margin-top: .5em; padding-top: .5em; border-top: 1px solid #c9d4e4; font-size: .72em; letter-spacing: .12em; color: #0f2a4a; font-weight: 600; }
-.cert-slogan { text-align: right; font-size: .82em; font-weight: 800; color: #1d5fb8; line-height: 1.35; }
-.cert-title-row { display: flex; align-items: center; gap: 1.2em; margin: 1em 0 .4em; }
+.cert-brand { display: flex; align-items: center; gap: .6em; }
+.cert-brand .bolt { color: #0f2a4a; font-size: 2em; line-height: 1; }
+.cert-brand h1 { margin: 0; font-size: 1.5em; letter-spacing: .04em; color: #0f2a4a; }
+.cert-brand .sub { font-size: .72em; color: #33415c; }
+.cert-areas { margin-top: .3em; padding-top: .3em; border-top: 1px solid #c9d4e4; font-size: .65em; letter-spacing: .1em; color: #0f2a4a; font-weight: 600; }
+.cert-slogan { text-align: right; font-size: .7em; font-weight: 800; color: #1d5fb8; line-height: 1.3; }
+.cert-title-row { display: flex; align-items: center; gap: .8em; margin: .5em 0 .2em; }
 .cert-medal {
   flex: none;
-  width: 4.2em; height: 4.2em;
+  width: 3.2em; height: 3.2em;
   border-radius: 50%;
   background: radial-gradient(circle, #1d5fb8 0%, #0f2a4a 70%);
   color: #fff;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.9em;
+  font-size: 1.5em;
   position: relative;
-  box-shadow: 0 0 0 .18em #dbe6f5, 0 0 0 .3em #0f2a4a22;
+  box-shadow: 0 0 0 .14em #dbe6f5, 0 0 0 .22em #0f2a4a22;
 }
-.cert-title-row h2 { margin: 0; font-size: 2.1em; letter-spacing: .03em; color: #0f2a4a; }
-.cert-main { display: flex; gap: 2.4%; margin-top: .4em; flex: 1; }
+.cert-title-row h2 { margin: 0; font-size: 1.6em; letter-spacing: .03em; color: #0f2a4a; }
+img.cert-medal {
+  object-fit: contain;
+  background: #fff;
+  padding: .25em;
+}
+.cert-main { display: flex; gap: 2%; margin-top: .25em; flex: none; }
 .cert-left { flex: 1.55; text-align: center; }
-.cert-certify { font-size: 1.02em; color: #0f2a4a; font-weight: 600; }
-.cert-name { font-size: 2em; font-weight: 800; color: #101418; margin: .15em 0 .3em; text-transform: uppercase; }
-.cert-text { font-size: .92em; color: #33415c; border-top: 1px solid #c9d4e4; padding-top: .7em; margin: 0 auto; max-width: 96%; }
+.cert-certify { font-size: .88em; color: #0f2a4a; font-weight: 600; }
+.cert-name { font-size: 1.55em; font-weight: 800; color: #101418; margin: .08em 0 .18em; text-transform: uppercase; }
+.cert-text { font-size: .78em; color: #33415c; border-top: 1px solid #c9d4e4; padding-top: .4em; margin: 0 auto; max-width: 96%; line-height: 1.35; }
 .cert-pill {
-  display: inline-flex; align-items: center; gap: .5em;
+  display: inline-flex; align-items: center; gap: .4em;
   background: #16a34a; color: #fff;
-  font-weight: 800; font-size: 1.25em; letter-spacing: .04em;
-  border-radius: 999px; padding: .35em 1.4em; margin: .7em 0 .4em;
+  font-weight: 800; font-size: 1em; letter-spacing: .04em;
+  border-radius: 999px; padding: .25em 1.1em; margin: .4em 0 .25em;
 }
-.cert-perf { font-size: .9em; color: #33415c; }
-.cert-perf strong { color: #0f2a4a; font-size: 1.12em; }
+.cert-perf { font-size: .78em; color: #33415c; }
+.cert-perf strong { color: #0f2a4a; font-size: 1.08em; }
 .cert-info {
   flex: 1;
+  min-width: 0;
   background: #f2f7fd;
   border: 1px solid #c9d4e4;
-  border-radius: 10px;
-  padding: .9em 1em;
-  font-size: .85em;
+  border-radius: 8px;
+  padding: .55em .7em;
+  font-size: .75em;
   align-self: flex-start;
   width: 100%;
 }
-.cert-info-row { display: flex; gap: .7em; padding: .42em 0; border-bottom: 1px solid #dde6f2; align-items: flex-start; }
+.cert-info-row { display: flex; gap: .55em; padding: .28em 0; border-bottom: 1px solid #dde6f2; align-items: flex-start; }
 .cert-info-row:last-child { border-bottom: none; }
-.cert-info-row .ic { color: #0f2a4a; width: 1.4em; text-align: center; flex: none; }
-.cert-info-row .k { color: #33415c; width: 34%; flex: none; }
-.cert-info-row .v { font-weight: 700; color: #0f2a4a; }
+.cert-info-row .ic { color: #0f2a4a; width: 1.3em; text-align: center; flex: none; }
+.cert-info-row .k { color: #33415c; width: 36%; flex: none; font-size: .95em; }
+.cert-info-row .v { flex: 1; min-width: 0; font-weight: 700; color: #0f2a4a; font-size: .98em; overflow-wrap: anywhere; }
 .cert-info-row .v.mono { font-family: Consolas, monospace; }
-.cert-bottom3 { display: flex; gap: 1.6%; margin-top: 1em; align-items: stretch; }
+.cert-bottom3 { display: flex; gap: 1.2%; margin-top: .5em; align-items: stretch; flex: 1; min-height: 0; }
 .cert-panel {
   background: #f6f9fd;
   border: 1px solid #c9d4e4;
-  border-radius: 10px;
-  padding: .8em 1em;
-  font-size: .8em;
-  position: relative;
-}
-.cert-panel-tab {
-  position: absolute; top: -.85em; left: 0;
-  background: #0f2a4a; color: #fff;
-  font-size: .78em; font-weight: 800; letter-spacing: .05em;
-  padding: .3em 1.2em;
-  border-radius: 6px 14px 14px 0;
-}
-.cert-panel.syllabus { flex: 1.5; padding-top: 1.4em; }
-.cert-panel.syllabus .cols { display: flex; gap: 2em; }
-.cert-panel.syllabus .cols div { flex: 1; }
-.cert-panel.syllabus p { margin: .18em 0; color: #33415c; }
-.cert-panel.syllabus strong { color: #0f2a4a; }
-.cert-panel.qr { flex: .85; text-align: center; }
-.cert-panel.qr h4 { margin: 0 0 .3em; font-size: .95em; color: #0f2a4a; }
-.cert-panel.qr p { color: #33415c; margin: .2em 0 .5em; }
-.cert-panel.qr img { width: 6.4em; height: 6.4em; }
-.cert-panel.qr .code { font-family: Consolas, monospace; font-weight: 700; color: #0f2a4a; margin-top: .4em; }
-.cert-sigs { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 1em; font-size: .8em; text-align: center; }
-.cert-sig .sign { font-family: "Brush Script MT", "Segoe Script", cursive; font-size: 2em; color: #0f2a4a; line-height: 1; min-height: 1em; }
-.cert-sig .line { border-top: 1.5px solid #0f2a4a; padding-top: .35em; font-weight: 800; color: #0f2a4a; font-size: .85em; }
-.cert-sig .who { color: #33415c; }
-.cert-foot { display: flex; gap: 1.5em; align-items: flex-start; margin-top: 1em; font-size: .72em; color: #5b6b82; }
-.cert-foot .info-ic {
-  flex: none; width: 1.7em; height: 1.7em; border-radius: 50%;
-  background: #1d5fb8; color: #fff;
-  display: flex; align-items: center; justify-content: center; font-weight: 800;
-}
-.cert-foot-right { margin-left: auto; text-align: right; flex: none; }
-.cert-foot-right .code { font-family: Consolas, monospace; font-weight: 800; color: #0f2a4a; font-size: 1.05em; }
-
-/* Segunda página — histórico acadêmico */
-.cert-sheet2 {
-  background: white;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  box-shadow: var(--card-shadow);
-  aspect-ratio: 297 / 210;
-  width: 100%;
-  overflow: hidden;
+  border-radius: 8px;
+  padding: .55em .7em;
+  font-size: .72em;
   position: relative;
   display: flex;
   flex-direction: column;
-  font-size: clamp(8px, 1.1vw, 14px);
-  color: #1f2a3a;
-  padding: 2.6% 3.4% 1.6%;
-  margin-top: 20px;
-  page-break-before: always;
+  min-height: 0;
 }
-.cert-sheet2 h2 { color: #0f2a4a; letter-spacing: .04em; margin: 0; font-size: 1.6em; }
-.cert-sheet2 .sub { color: #33415c; font-size: .9em; margin: .2em 0 1em; }
-.cert-hist-info { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6em 2em; font-size: .88em; margin-bottom: 1em; }
-.cert-hist-info .k { color: #5b6b82; font-size: .85em; text-transform: uppercase; letter-spacing: .04em; }
-.cert-hist-info .v { font-weight: 700; color: #0f2a4a; }
-.cert-hist-table { width: 100%; border-collapse: collapse; font-size: .88em; }
-.cert-hist-table th { background: #0f2a4a; color: #fff; text-align: left; padding: .5em .8em; font-size: .85em; letter-spacing: .04em; }
-.cert-hist-table td { border-bottom: 1px solid #dde6f2; padding: .42em .8em; color: #33415c; }
-.cert-hist-table td.num, .cert-hist-table th.num { text-align: center; width: 12%; }
-.cert-hist-table tr.total td { font-weight: 800; color: #0f2a4a; border-bottom: none; border-top: 2px solid #0f2a4a; }
+.cert-panel-tab {
+  position: absolute; top: -.75em; left: 0;
+  background: #0f2a4a; color: #fff;
+  font-size: .75em; font-weight: 800; letter-spacing: .05em;
+  padding: .22em .9em;
+  border-radius: 5px 12px 12px 0;
+}
+.cert-panel.syllabus { flex: 2.4; padding-top: 1.1em; overflow: hidden; }
+.cert-panel.syllabus .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 .9em; min-height: 0; }
+.cert-panel.syllabus .cols p { margin: .12em 0; line-height: 1.25; overflow-wrap: anywhere; }
+.cert-panel.syllabus .cols .ch { white-space: nowrap; color: #5b6b82; font-size: .95em; }
+.cert-syll-total { margin-top: .3em; padding-top: .3em; border-top: 1px solid #c9d4e4; font-weight: 800; color: #0f2a4a; }
+.cert-panel.syllabus p { margin: .15em 0; color: #33415c; }
+.cert-panel.syllabus strong { color: #0f2a4a; }
+.cert-right-col { flex: 1.7; display: flex; flex-direction: column; gap: .5em; min-height: 0; min-width: 0; }
+.cert-panel.qr { flex: none; flex-direction: row; align-items: center; gap: .7em; text-align: left; justify-content: flex-start; }
+.cert-panel.qr .qr-text { flex: 1; min-width: 0; }
+.cert-panel.qr .qr-text p { overflow-wrap: anywhere; }
+.cert-panel.qr img { flex: none; }
+.cert-sigs { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: .55em; font-size: .72em; text-align: center; }
+.cert-panel.qr h4 { margin: 0 0 .2em; font-size: .9em; color: #0f2a4a; }
+.cert-panel.qr p { color: #33415c; margin: .15em 0 .3em; font-size: .88em; }
+.cert-panel.qr img { width: 5.2em; height: 5.2em; }
+.cert-panel.qr .code { font-family: Consolas, monospace; font-weight: 700; color: #0f2a4a; margin-top: .3em; font-size: .88em; }
+.cert-sig .sign { font-family: "Brush Script MT", "Segoe Script", cursive; font-size: 1.55em; color: #0f2a4a; line-height: 1; min-height: .9em; }
+.cert-sig .line { border-top: 1.3px solid #0f2a4a; padding-top: .25em; font-weight: 800; color: #0f2a4a; font-size: .82em; }
+.cert-sig .who { color: #33415c; font-size: .88em; line-height: 1.25; }
+.cert-foot { display: flex; gap: 1em; align-items: flex-start; margin-top: .45em; font-size: .62em; color: #5b6b82; line-height: 1.3; }
+.cert-foot .info-ic {
+  flex: none; width: 1.5em; height: 1.5em; border-radius: 50%;
+  background: #1d5fb8; color: #fff;
+  display: flex; align-items: center; justify-content: center; font-weight: 800;
+  flex-shrink: 0;
+}
+.cert-foot-right { margin-left: auto; text-align: right; flex: none; white-space: nowrap; }
+.cert-foot-right .code { font-family: Consolas, monospace; font-weight: 800; color: #0f2a4a; font-size: 1.05em; }
+
+/* Segunda página — histórico acadêmico (visível só na impressão) */
+.cert-sheet2 {
+  display: none;
+}
+.cert-sheet2 h2 { margin: 0; font-size: 1.7em; letter-spacing: .04em; color: #0f2a4a; }
+.cert-sheet2 .sub { font-size: .8em; letter-spacing: .12em; color: #33415c; font-weight: 700; margin: .2em 0 .8em; }
+.cert-hist-info { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: .6em; margin-bottom: .9em; }
+.cert-hist-info .k { font-size: .72em; letter-spacing: .08em; color: #5b6b82; font-weight: 700; }
+.cert-hist-info .v { font-size: .95em; font-weight: 700; color: #0f2a4a; }
+.cert-hist-info .v.mono { font-family: Consolas, monospace; }
+.cert-hist-table { width: 100%; border-collapse: collapse; font-size: .82em; table-layout: fixed; }
+.cert-hist-table thead { display: table-header-group; }
+.cert-hist-table th { background: #0f2a4a; color: #fff; text-align: left; padding: .3em .55em; font-size: .78em; letter-spacing: .03em; }
+.cert-hist-table tbody { display: table-row-group; }
+.cert-hist-table td { border-bottom: 1px solid #dde6f2; padding: .22em .55em; color: #33415c; font-size: .82em; line-height: 1.15; vertical-align: top; }
+.cert-hist-table td.num, .cert-hist-table th.num { text-align: center; width: 8%; }
+.cert-hist-table tr.total td { font-weight: 800; color: #0f2a4a; border-bottom: none; border-top: 1.6px solid #0f2a4a; background: #eaf2fc; }
+
+/* Integração da tabela histórica compacta dentro do painel syllabus da página 1 */
+.cert-panel.syllabus .cert-hist-table { font-size: 1em; }
+.cert-panel.syllabus .cert-hist-table th { padding: .18em .5em; font-size: .88em; }
+.cert-panel.syllabus .cert-hist-table td { padding: .1em .5em; font-size: .92em; line-height: 1.15; overflow-wrap: anywhere; }
+.cert-panel.syllabus .cert-hist-wrap { flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0; -webkit-overflow-scrolling: touch; }
+.cert-hist-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 .7em; }
+.cert-hist-cols .cert-hist-table { min-width: 0; }
 
 #adminPrintWrap { display: none; }
 
-/* Impressão: 2 páginas A4 paisagem (folha 1 + histórico).
+/* Impressão: A4 paisagem em 2 páginas — folha 1 certificado, folha 2 histórico acadêmico.
    display:none (não visibility) para não gerar páginas em branco.
    No diálogo de impressão use Margens: Nenhuma. */
 @page { size: A4 landscape; margin: 0; }
@@ -2095,16 +2155,33 @@ body.is-evaluator .eval-only {
   body.printing-admin .app-container { display: none !important; }
   body.printing-admin #adminPrintWrap { display: block !important; }
   body.printing-admin #adminPrintWrap .cert-ready-card { display: none !important; }
-  .cert-sheet, .cert-sheet2 {
+  .cert-sheet {
     width: 100%;
+    height: 100vh;
     aspect-ratio: auto;
     border: none;
     border-radius: 0;
     box-shadow: none;
     margin: 0;
     overflow: hidden;
-    font-size: 10.5pt;
+    font-size: 9.5pt;
+    page-break-after: auto;
+    page-break-inside: avoid;
   }
-  .cert-sheet { page-break-after: always; }
-  .cert-sheet2 { margin-top: 0; page-break-before: auto; }
+  .cert-sheet2 {
+    display: block !important;
+    page-break-before: always;
+    page-break-inside: avoid;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background: #fff;
+    padding: 2.5% 3%;
+    font-size: 9.5pt;
+    color: #1f2a3a;
+  }
+  /* Garante que a tabela histórica não quebre entre páginas */
+  .cert-bottom3, .cert-panel, .cert-hist-table { page-break-inside: avoid; }
+  .cert-panel.syllabus { overflow: visible; }
+  .cert-panel.syllabus .cert-hist-wrap { overflow: visible; }
 }
